@@ -1,0 +1,2 @@
+*.zip filter=lfs diff=lfs merge=lfs -text
+legezt[[:space:]]portal.zip filter=lfs diff=lfs merge=lfs -text
