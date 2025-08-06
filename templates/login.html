@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Legezt Portal{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
+        <div>
+            <div class="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
+                <i class="fas fa-graduation-cap text-2xl text-blue-600 dark:text-blue-400"></i>
+            </div>
+            <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
+                Sign in to your account
+            </h2>
+            <p class="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
+                Or
+                <a href="{{ url_for('register') }}" class="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400">
+                    create a new account
+                </a>
+            </p>
+        </div>
+        
+        <form class="mt-8 space-y-6" method="POST" id="loginForm">
+            <div class="rounded-md shadow-sm -space-y-px">
+                <div>
+                    <label for="email" class="sr-only">Email address</label>
+                    <input id="email" name="email" type="email" autocomplete="email" required 
+                           class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm bg-white dark:bg-gray-700"
+                           placeholder="Email address">
+                </div>
+                <div>
+                    <label for="password" class="sr-only">Password</label>
+                    <input id="password" name="password" type="password" autocomplete="current-password" required 
+                           class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm bg-white dark:bg-gray-700"
+                           placeholder="Password">
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <input id="remember-me" name="remember-me" type="checkbox" 
+                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                    <label for="remember-me" class="ml-2 block text-sm text-gray-900 dark:text-gray-300">
+                        Remember me
+                    </label>
+                </div>
+
+                <div class="text-sm">
+                    <a href="#" class="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400">
+                        Forgot your password?
+                    </a>
+                </div>
+            </div>
+
+            <div>
+                <button type="submit" 
+                        class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200">
+                    <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+                        <i class="fas fa-sign-in-alt text-blue-500 group-hover:text-blue-400"></i>
+                    </span>
+                    Sign in
+                </button>
+            </div>
+
+            <!-- Social Login -->
+            <div class="mt-6">
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-300 dark:border-gray-600"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-2 bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400">Or continue with</span>
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <button type="button" 
+                            class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition duration-200">
+                        <i class="fab fa-google text-red-500 mr-2"></i>
+                        Sign in with Google
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('loginForm').addEventListener('submit', function(e) {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    
+    // Basic validation
+    if (!email || !password) {
+        e.preventDefault();
+        alert('Please fill in all fields');
+        return;
+    }
+    
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        e.preventDefault();
+        alert('Please enter a valid email address');
+        return;
+    }
+    
+    // Password validation
+    if (password.length < 6) {
+        e.preventDefault();
+        alert('Password must be at least 6 characters long');
+        return;
+    }
+});
+
+// Show/hide password functionality
+document.getElementById('password').addEventListener('input', function() {
+    const password = this.value;
+    const strength = getPasswordStrength(password);
+    updatePasswordStrengthIndicator(strength);
+});
+
+function getPasswordStrength(password) {
+    let strength = 0;
+    if (password.length >= 6) strength++;
+    if (password.match(/[a-z]/)) strength++;
+    if (password.match(/[A-Z]/)) strength++;
+    if (password.match(/[0-9]/)) strength++;
+    if (password.match(/[^a-zA-Z0-9]/)) strength++;
+    return strength;
+}
+
+function updatePasswordStrengthIndicator(strength) {
+    // Remove existing strength indicator
+    const existingIndicator = document.querySelector('.password-strength');
+    if (existingIndicator) {
+        existingIndicator.remove();
+    }
+    
+    if (strength > 0) {
+        const indicator = document.createElement('div');
+        indicator.className = 'password-strength mt-2';
+        
+        const colors = ['bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-blue-500', 'bg-green-500'];
+        const labels = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong'];
+        
+        indicator.innerHTML = `
+            <div class="flex items-center">
+                <div class="flex-1 bg-gray-200 dark:bg-gray-600 rounded-full h-2 mr-2">
+                    <div class="h-2 rounded-full transition-all duration-300 ${colors[strength - 1]}" style="width: ${(strength / 5) * 100}%"></div>
+                </div>
+                <span class="text-xs text-gray-500 dark:text-gray-400">${labels[strength - 1]}</span>
+            </div>
+        `;
+        
+        document.getElementById('password').parentNode.appendChild(indicator);
+    }
+}
+</script>
+{% endblock %} 

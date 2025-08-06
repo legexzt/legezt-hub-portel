@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Legezt Portal</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/output.css') }}">
+    <style>
+        .video-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        .video-bg {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1;
+        }
+        
+                 .content {
+             position: relative;
+             z-index: 2;
+             min-height: 100vh;
+             display: flex;
+             flex-direction: column;
+             justify-content: center;
+             align-items: center;
+             text-align: center;
+             color: white;
+             padding: 1rem;
+         }
+        
+                 .loading-spinner {
+             border: 2px solid rgba(255, 255, 255, 0.3);
+             border-radius: 50%;
+             border-top: 2px solid white;
+             width: 30px;
+             height: 30px;
+             animation: spin 1s linear infinite;
+             margin-top: 15px;
+         }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+                 .countdown {
+             font-size: 1.5rem;
+             font-weight: bold;
+             margin-top: 8px;
+         }
+    </style>
+</head>
+<body>
+    <!-- Video Background -->
+    <div class="video-container">
+        <video class="video-bg" autoplay muted loop>
+            <source src="{{ url_for('static', filename='videos/splash.webm') }}" type="video/webm">
+            <source src="{{ url_for('static', filename='videos/splash.mp4') }}" type="video/mp4">
+            <!-- Fallback background if video doesn't load -->
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); width: 100%; height: 100%;"></div>
+        </video>
+        <div class="overlay"></div>
+    </div>
+
+         <!-- Content -->
+     <div class="content">
+         <div class="max-w-3xl mx-auto px-4">
+                         <!-- Logo and Title -->
+             <div class="mb-6">
+                 <div class="mb-4">
+                                           <img src="{{ url_for('static', filename='images/legezt.png') }}" alt="Legezt Portal Logo" class="h-20 md:h-24 w-auto mx-auto mb-4" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                     <div class="text-4xl md:text-5xl mb-3" style="display: none;">
+                         <i class="fas fa-graduation-cap"></i>
+                     </div>
+                 </div>
+                 <h1 class="text-3xl md:text-5xl font-bold mb-3">
+                     Legezt Portal
+                 </h1>
+                 <p class="text-lg md:text-xl text-gray-200 mb-6">
+                     Empowering Students with Quality Educational Resources
+                 </p>
+             </div>
+
+                         <!-- Features -->
+             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                 <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4">
+                     <div class="text-2xl mb-2">
+                         <i class="fas fa-book-open"></i>
+                     </div>
+                     <h3 class="text-base font-semibold mb-1">Study Materials</h3>
+                     <p class="text-sm text-gray-200">Access comprehensive notes, assignments, and study resources</p>
+                 </div>
+                 
+                 <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4">
+                     <div class="text-2xl mb-2">
+                         <i class="fas fa-users"></i>
+                     </div>
+                     <h3 class="text-base font-semibold mb-1">Community</h3>
+                     <p class="text-sm text-gray-200">Connect with fellow students and share knowledge</p>
+                 </div>
+                 
+                 <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4">
+                     <div class="text-2xl mb-2">
+                         <i class="fas fa-mobile-alt"></i>
+                     </div>
+                     <h3 class="text-base font-semibold mb-1">Mobile Friendly</h3>
+                     <p class="text-sm text-gray-200">Access your resources anywhere, anytime</p>
+                 </div>
+             </div>
+
+                         <!-- Loading and Countdown -->
+             <div class="text-center">
+                 <div class="loading-spinner mx-auto"></div>
+                 <div class="countdown" id="countdown">4</div>
+                 <p class="text-gray-200 mt-2 text-sm">Redirecting to homepage...</p>
+             </div>
+        </div>
+    </div>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        // Countdown and redirect
+        let countdown = 4;
+        const countdownElement = document.getElementById('countdown');
+        
+        const timer = setInterval(() => {
+            countdown--;
+            countdownElement.textContent = countdown;
+            
+            if (countdown <= 0) {
+                clearInterval(timer);
+                window.location.href = '/home';
+            }
+        }, 1000);
+
+        // Skip splash screen on click
+        document.addEventListener('click', () => {
+            clearInterval(timer);
+            window.location.href = '/home';
+        });
+
+        // Skip on any key press
+        document.addEventListener('keydown', () => {
+            clearInterval(timer);
+            window.location.href = '/home';
+        });
+    </script>
+</body>
+</html> 

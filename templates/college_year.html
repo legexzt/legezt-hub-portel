@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}{{ college.name }} - {{ year.name }} - Legezt Portal{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <!-- Breadcrumb Navigation -->
+    <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center space-x-4 py-4">
+                <a href="{{ url_for('college') }}" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                    <i class="fas fa-university mr-2"></i>Colleges
+                </a>
+                <i class="fas fa-chevron-right text-gray-400"></i>
+                <a href="{{ url_for('college_detail', college_id=college.id) }}" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                    {{ college.name }}
+                </a>
+                <i class="fas fa-chevron-right text-gray-400"></i>
+                <span class="text-gray-900 dark:text-white font-medium">{{ year.name }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                        <i class="fas fa-calendar-alt mr-3"></i>{{ year.name }}
+                    </h1>
+                    <p class="text-gray-600 dark:text-gray-400 mb-2">
+                        <i class="fas fa-university mr-2"></i>{{ college.name }}
+                    </p>
+                    <p class="text-gray-600 dark:text-gray-400">
+                        Select a semester to browse study materials organized by branches and subjects.
+                    </p>
+                </div>
+                <a href="{{ url_for('college_detail', college_id=college.id) }}" class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    Back to {{ college.name }}
+                </a>
+            </div>
+        </div>
+
+        <!-- Semester Selection -->
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-6">
+                <i class="fas fa-graduation-cap mr-3"></i>Select Semester
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {% for semester in year.semesters %}
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 overflow-hidden border border-gray-200 dark:border-gray-700">
+                    <div class="p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-graduation-cap text-green-600 dark:text-green-400 text-xl"></i>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ semester.name }}</h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">{{ year.name }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-3 mb-6">
+                            <div class="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                                <i class="fas fa-book mr-2 text-blue-500"></i>
+                                <span>Study materials by branches</span>
+                            </div>
+                            <div class="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                                <i class="fas fa-folder mr-2 text-green-500"></i>
+                                <span>Organized by subjects</span>
+                            </div>
+                            <div class="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                                <i class="fas fa-download mr-2 text-purple-500"></i>
+                                <span>Easy download access</span>
+                            </div>
+                        </div>
+                        
+                        <a href="{{ url_for('college_semester', college_id=college.id, year_id=year.id, semester_id=semester.id) }}" 
+                           class="inline-flex items-center justify-center w-full px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-200">
+                            <i class="fas fa-arrow-right mr-2"></i>
+                            Browse {{ semester.name }}
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Year Information -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                    <i class="fas fa-info-circle mr-2"></i>Year Overview
+                </h3>
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600 dark:text-gray-400">Total Semesters:</span>
+                        <span class="font-semibold text-gray-900 dark:text-white">{{ year.semesters|length }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600 dark:text-gray-400">Available Branches:</span>
+                        <span class="font-semibold text-gray-900 dark:text-white">4</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600 dark:text-gray-400">Study Materials:</span>
+                        <span class="font-semibold text-gray-900 dark:text-white">0</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                    <i class="fas fa-list mr-2"></i>Semester List
+                </h3>
+                <div class="space-y-2">
+                    {% for semester in year.semesters %}
+                    <div class="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700 last:border-b-0">
+                        <span class="text-gray-700 dark:text-gray-300">{{ semester.name }}</span>
+                        <a href="{{ url_for('college_semester', college_id=college.id, year_id=year.id, semester_id=semester.id) }}" 
+                           class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm">
+                            Browse
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        {% if session.role == 'admin' %}
+        <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
+            <h3 class="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-4">
+                <i class="fas fa-tools mr-2"></i>Admin Actions
+            </h3>
+            <div class="flex flex-wrap gap-4">
+                <a href="{{ url_for('upload') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200">
+                    <i class="fas fa-upload mr-2"></i>
+                    Upload Materials
+                </a>
+                <a href="#" class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200">
+                    <i class="fas fa-cog mr-2"></i>
+                    Manage Branches
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Add any interactive features here
+document.addEventListener('DOMContentLoaded', function() {
+    // Semester card hover effects
+    const semesterCards = document.querySelectorAll('.semester-card');
+    semesterCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+});
+</script>
+{% endblock %} 

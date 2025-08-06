@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+
+{% block title %}{{ college.name }} - {{ year.name }} - {{ semester.name }} - {{ branch.name }} - {{ subject }} - Legezt Portal{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <!-- Breadcrumb Navigation -->
+    <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center space-x-4 py-4">
+                <a href="{{ url_for('college') }}" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                    <i class="fas fa-university mr-2"></i>Colleges
+                </a>
+                <i class="fas fa-chevron-right text-gray-400"></i>
+                <a href="{{ url_for('college_detail', college_id=college.id) }}" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                    {{ college.name }}
+                </a>
+                <i class="fas fa-chevron-right text-gray-400"></i>
+                <a href="{{ url_for('college_year', college_id=college.id, year_id=year.id) }}" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                    {{ year.name }}
+                </a>
+                <i class="fas fa-chevron-right text-gray-400"></i>
+                <a href="{{ url_for('college_semester', college_id=college.id, year_id=year.id, semester_id=semester.id) }}" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                    {{ semester.name }}
+                </a>
+                <i class="fas fa-chevron-right text-gray-400"></i>
+                <a href="{{ url_for('college_branch', college_id=college.id, year_id=year.id, semester_id=semester.id, branch_id=branch.id) }}" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                    {{ branch.name }}
+                </a>
+                <i class="fas fa-chevron-right text-gray-400"></i>
+                <span class="text-gray-900 dark:text-white font-medium">{{ subject }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                        <i class="fas fa-book mr-3"></i>{{ subject }}
+                    </h1>
+                    <p class="text-gray-600 dark:text-gray-400 mb-2">
+                        <i class="fas fa-university mr-2"></i>{{ college.name }} - {{ year.name }} - {{ semester.name }} - {{ branch.name }}
+                    </p>
+                    <p class="text-gray-600 dark:text-gray-400">
+                        Browse and download study materials for {{ subject }}.
+                    </p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    {% if session.role == 'admin' %}
+                    <a href="{{ url_for('upload') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-200">
+                        <i class="fas fa-upload mr-2"></i>
+                        Upload Material
+                    </a>
+                    {% endif %}
+                    <a href="{{ url_for('college_branch', college_id=college.id, year_id=year.id, semester_id=semester.id, branch_id=branch.id) }}" class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Back to {{ branch.name }}
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Subject Information -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                    <i class="fas fa-info-circle mr-2"></i>Subject Info
+                </h3>
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600 dark:text-gray-400">Subject:</span>
+                        <span class="font-semibold text-gray-900 dark:text-white">{{ subject }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600 dark:text-gray-400">Branch:</span>
+                        <span class="font-semibold text-gray-900 dark:text-white">{{ branch.name }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600 dark:text-gray-400">Semester:</span>
+                        <span class="font-semibold text-gray-900 dark:text-white">{{ semester.name }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                    <i class="fas fa-chart-bar mr-2"></i>Statistics
+                </h3>
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600 dark:text-gray-400">Total Materials:</span>
+                        <span class="font-semibold text-gray-900 dark:text-white">{{ files|length }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600 dark:text-gray-400">Total Downloads:</span>
+                        <span class="font-semibold text-gray-900 dark:text-white">{{ files|sum(attribute='download_count') }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600 dark:text-gray-400">Last Updated:</span>
+                        <span class="font-semibold text-gray-900 dark:text-white">
+                            {% if files %}
+                                {% set sorted_files = files|sort(attribute='upload_date', reverse=true) %}
+                                {{ sorted_files[0].upload_date if sorted_files and sorted_files[0].upload_date else 'N/A' }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                    <i class="fas fa-clock mr-2"></i>Quick Actions
+                </h3>
+                <div class="space-y-3">
+                    {% if session.role == 'admin' %}
+                    <a href="{{ url_for('upload') }}" class="block w-full text-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200">
+                        <i class="fas fa-upload mr-2"></i>Upload Material
+                    </a>
+                    <button onclick="manageMaterials()" class="block w-full px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200">
+                        <i class="fas fa-cog mr-2"></i>Manage Materials
+                    </button>
+                    {% endif %}
+                    <button onclick="searchMaterials()" class="block w-full px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200">
+                        <i class="fas fa-search mr-2"></i>Search Materials
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Study Materials -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+                    <i class="fas fa-file-alt mr-3"></i>Study Materials
+                </h2>
+                <span class="text-sm text-gray-500 dark:text-gray-400">{{ files|length }} materials found</span>
+            </div>
+            
+            {% if files %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for file in files %}
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 overflow-hidden border border-gray-200 dark:border-gray-700">
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-file-pdf text-blue-600 dark:text-blue-400 text-xl"></i>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-xs text-gray-500 dark:text-gray-400">{{ file.download_count }} downloads</span>
+                            </div>
+                        </div>
+                        
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2">
+                            {{ file.title }}
+                        </h3>
+                        
+                        {% if file.description %}
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-3">
+                            {{ file.description }}
+                        </p>
+                        {% endif %}
+                        
+                        <div class="space-y-2 mb-4">
+                            <div class="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                                <i class="fas fa-user mr-2"></i>
+                                <span>{{ file.uploader }}</span>
+                            </div>
+                            <div class="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                                <i class="fas fa-calendar mr-2"></i>
+                                <span>{{ file.upload_date if file.upload_date else 'N/A' }}</span>
+                            </div>
+                            <div class="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                                <i class="fas fa-tag mr-2"></i>
+                                <span>{{ file.branch }} - {{ file.subject }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                    <i class="fas fa-check mr-1"></i>Available
+                                </span>
+                            </div>
+                            <a href="{{ url_for('download', file_id=file.id) }}" 
+                               class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200">
+                                <i class="fas fa-download mr-1"></i>
+                                Download
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <!-- No Materials Available -->
+            <div class="text-center py-16 bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
+                <div class="mx-auto h-24 w-24 text-gray-400 mb-6">
+                    <i class="fas fa-file-alt text-6xl"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">No Study Materials Available</h3>
+                <p class="text-lg text-gray-600 dark:text-gray-400 mb-6 max-w-2xl mx-auto">
+                    No study materials have been uploaded for {{ subject }} yet. 
+                    {% if session.role == 'admin' %}
+                    Start by uploading the first study material for this subject.
+                    {% else %}
+                    Please check back later or contact the administrator.
+                    {% endif %}
+                </p>
+                
+                {% if session.role == 'admin' %}
+                <div class="space-y-4">
+                    <a href="{{ url_for('upload') }}" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200">
+                        <i class="fas fa-upload mr-2"></i>
+                        Upload First Material
+                    </a>
+                </div>
+                {% else %}
+                <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6 max-w-md mx-auto">
+                    <h4 class="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                        <i class="fas fa-envelope mr-2"></i>Request Materials
+                    </h4>
+                    <p class="text-blue-800 dark:text-blue-200 mb-4">
+                        Send an email to request study materials for this subject:
+                    </p>
+                    <a href="mailto:mdjibjibran@gmail.com" 
+                       class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200">
+                        <i class="fas fa-envelope mr-2"></i>
+                        mdjibjibran@gmail.com
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Quick Actions -->
+        {% if session.role == 'admin' %}
+        <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
+            <h3 class="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-4">
+                <i class="fas fa-tools mr-2"></i>Admin Actions
+            </h3>
+            <div class="flex flex-wrap gap-4">
+                <a href="{{ url_for('upload') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200">
+                    <i class="fas fa-upload mr-2"></i>
+                    Upload Materials
+                </a>
+                <button onclick="manageMaterials()" class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200">
+                    <i class="fas fa-cog mr-2"></i>
+                    Manage Materials
+                </button>
+                <button onclick="viewAnalytics()" class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200">
+                    <i class="fas fa-chart-line mr-2"></i>
+                    View Analytics
+                </button>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Search materials function
+function searchMaterials() {
+    const searchTerm = prompt('Enter search term for materials:');
+    if (searchTerm) {
+        // Here you would implement search functionality
+        alert(`Searching for: ${searchTerm} (This is a demo - actual search would be implemented)`);
+    }
+}
+
+// Manage materials function
+function manageMaterials() {
+    alert('Material management feature would be implemented here.');
+}
+
+// View analytics function
+function viewAnalytics() {
+    alert('Analytics feature would be implemented here.');
+}
+
+// Add any additional interactive features here
+document.addEventListener('DOMContentLoaded', function() {
+    // Material card hover effects
+    const materialCards = document.querySelectorAll('.material-card');
+    materialCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+});
+</script>
+{% endblock %} 

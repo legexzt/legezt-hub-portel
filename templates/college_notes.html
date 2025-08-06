@@ -1,0 +1,278 @@
+{% extends "base.html" %}
+
+{% block title %}College Management - Legezt Portal{% endblock %}
+
+{% block content %}
+<div class="flex h-screen bg-gray-50 dark:bg-gray-900">
+    <!-- Sidebar -->
+    <div id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 shadow-lg transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0">
+        <div class="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-center">
+                <img src="{{ url_for('static', filename='images/legezt.png') }}" alt="Legezt Portal Logo" class="h-8 w-auto mr-2" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+                <i class="fas fa-graduation-cap text-lg text-blue-600 dark:text-blue-400 mr-2" style="display: none;"></i>
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Menu</h2>
+            </div>
+            <button id="closeSidebar" class="lg:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200" title="Close sidebar">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <nav class="mt-4 px-4">
+            <div class="space-y-2">
+                <a href="{{ url_for('dashboard') }}" class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white">
+                    <i class="fas fa-home mr-3"></i>
+                    Dashboard
+                </a>
+                <a href="{{ url_for('college') }}" class="flex items-center px-3 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 rounded-md bg-blue-50 dark:bg-blue-900">
+                    <i class="fas fa-university mr-3"></i>
+                    College Management
+                </a>
+                <a href="{{ url_for('settings') }}" class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white">
+                    <i class="fas fa-cog mr-3"></i>
+                    Settings
+                </a>
+                {% if session.role == 'admin' %}
+                <a href="{{ url_for('upload') }}" class="flex items-center px-3 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900">
+                    <i class="fas fa-upload mr-3"></i>
+                    Upload Files
+                </a>
+                {% endif %}
+            </div>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+        <!-- Top Bar -->
+        <div class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between h-16 px-4">
+                <button id="openSidebar" class="lg:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200" title="Open sidebar">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                
+                <div class="flex-1 max-w-2xl mx-auto">
+                    <div class="relative">
+                        <input type="text" id="searchInput" placeholder="Search colleges..." 
+                               class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-search text-gray-400"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Area -->
+        <div class="flex-1 overflow-auto">
+            <div class="p-6">
+                <!-- Header -->
+                <div class="mb-8">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                                <i class="fas fa-university mr-3"></i>College Management
+                            </h1>
+                            <p class="text-gray-600 dark:text-gray-400">
+                                Manage colleges and browse study materials organized by years, semesters, and branches.
+                            </p>
+                        </div>
+                        {% if session.role == 'admin' %}
+                        <a href="{{ url_for('add_college') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200">
+                            <i class="fas fa-plus mr-2"></i>
+                            Add College
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- College List -->
+                <div class="mb-8">
+                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Colleges</h2>
+                    
+                    {% if colleges %}
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {% for college in colleges %}
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 overflow-hidden border border-gray-200 dark:border-gray-700">
+                            <div class="p-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center">
+                                        <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+                                            <i class="fas fa-university text-blue-600 dark:text-blue-400 text-xl"></i>
+                                        </div>
+                                        <div class="ml-4">
+                                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ college.name }}</h3>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400">{{ college.location }}</p>
+                                        </div>
+                                    </div>
+                                    {% if session.role == 'admin' %}
+                                    <div class="flex items-center space-x-2">
+                                        <a href="{{ url_for('edit_college', college_id=college.id) }}" 
+                                           class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300" 
+                                           title="Edit College">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button onclick="deleteCollege({{ college.id }}, '{{ college.name }}')" 
+                                                class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300" 
+                                                title="Delete College">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <p class="text-gray-600 dark:text-gray-400 mb-4">{{ college.description }}</p>
+                                
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">
+                                        <i class="fas fa-calendar mr-1"></i>
+                                        {{ college.created_at.split('T')[0] if college.created_at else 'N/A' }}
+                                    </span>
+                                    <a href="{{ url_for('college_detail', college_id=college.id) }}" 
+                                       class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200">
+                                        <i class="fas fa-arrow-right mr-2"></i>
+                                        Browse
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <!-- No Colleges Added Message -->
+                    <div class="text-center py-16 bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
+                        <div class="mx-auto h-24 w-24 text-gray-400 mb-6">
+                            <i class="fas fa-university text-6xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">No Colleges Added Yet</h3>
+                        <p class="text-lg text-gray-600 dark:text-gray-400 mb-6 max-w-2xl mx-auto">
+                            No colleges have been added to the system yet. 
+                            {% if session.role == 'admin' %}
+                            Start by adding your first college to organize study materials.
+                            {% else %}
+                            Please contact the administrator to add college information and study materials.
+                            {% endif %}
+                        </p>
+                        
+                        {% if session.role == 'admin' %}
+                        <div class="space-y-4">
+                            <a href="{{ url_for('add_college') }}" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200">
+                                <i class="fas fa-plus mr-2"></i>
+                                Add Your First College
+                            </a>
+                        </div>
+                        {% else %}
+                        <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6 max-w-md mx-auto">
+                            <h4 class="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                                <i class="fas fa-envelope mr-2"></i>Contact Admin
+                            </h4>
+                            <p class="text-blue-800 dark:text-blue-200 mb-4">
+                                Send an email to request college addition:
+                            </p>
+                            <a href="mailto:mdjibjibran@gmail.com" 
+                               class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200">
+                                <i class="fas fa-envelope mr-2"></i>
+                                mdjibjibran@gmail.com
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
+        <div class="mt-3 text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900">
+                <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400"></i>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white mt-4">Delete College</h3>
+            <div class="mt-2 px-7 py-3">
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                    Are you sure you want to delete "<span id="collegeName" class="font-semibold"></span>"? 
+                    This action cannot be undone.
+                </p>
+            </div>
+            <div class="items-center px-4 py-3">
+                <form id="deleteForm" method="POST">
+                    <button type="button" onclick="closeDeleteModal()" 
+                            class="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md w-24 mr-2 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                        Cancel
+                    </button>
+                    <button type="submit" 
+                            class="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md w-24 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300">
+                        Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Overlay for mobile sidebar -->
+<div id="sidebarOverlay" class="fixed inset-0 bg-gray-600 bg-opacity-75 z-40 lg:hidden hidden"></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Sidebar functionality
+const sidebar = document.getElementById('sidebar');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
+const openSidebarBtn = document.getElementById('openSidebar');
+const closeSidebarBtn = document.getElementById('closeSidebar');
+
+function openSidebar() {
+    sidebar.classList.remove('-translate-x-full');
+    sidebarOverlay.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeSidebar() {
+    sidebar.classList.add('-translate-x-full');
+    sidebarOverlay.classList.add('hidden');
+    document.body.style.overflow = 'auto';
+}
+
+openSidebarBtn.addEventListener('click', openSidebar);
+closeSidebarBtn.addEventListener('click', closeSidebar);
+sidebarOverlay.addEventListener('click', closeSidebar);
+
+// Delete modal functionality
+function deleteCollege(collegeId, collegeName) {
+    document.getElementById('collegeName').textContent = collegeName;
+    document.getElementById('deleteForm').action = `/college/delete/${collegeId}`;
+    document.getElementById('deleteModal').classList.remove('hidden');
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteModal').classList.add('hidden');
+}
+
+// Search functionality
+const searchInput = document.getElementById('searchInput');
+let searchTimeout;
+
+searchInput.addEventListener('input', (e) => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        const searchTerm = e.target.value.toLowerCase();
+        const collegeCards = document.querySelectorAll('.college-card');
+        
+        collegeCards.forEach(card => {
+            const collegeName = card.querySelector('h3').textContent.toLowerCase();
+            const collegeLocation = card.querySelector('p').textContent.toLowerCase();
+            
+            if (collegeName.includes(searchTerm) || collegeLocation.includes(searchTerm)) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }, 300);
+});
+</script>
+{% endblock %} 

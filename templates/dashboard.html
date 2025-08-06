@@ -1,0 +1,356 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Legezt Portal{% endblock %}
+
+{% block content %}
+<div class="flex h-screen bg-gray-50 dark:bg-gray-900">
+    <!-- Sidebar -->
+    <div id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 shadow-lg transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0">
+        <div class="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-center">
+                <img src="{{ url_for('static', filename='images/legezt.png') }}" alt="Legezt Portal Logo" class="h-8 w-auto mr-2" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+                <i class="fas fa-graduation-cap text-lg text-blue-600 dark:text-blue-400 mr-2" style="display: none;"></i>
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Menu</h2>
+            </div>
+            <button id="closeSidebar" class="lg:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200" title="Close sidebar">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <nav class="mt-4 px-4">
+            <div class="space-y-2">
+                <a href="{{ url_for('about') }}" class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white">
+                    <i class="fas fa-info-circle mr-3"></i>
+                    About Us
+                </a>
+                <a href="{{ url_for('college') }}" class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white">
+                    <i class="fas fa-university mr-3"></i>
+                    College
+                </a>
+                <a href="{{ url_for('settings') }}" class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white">
+                    <i class="fas fa-cog mr-3"></i>
+                    Settings
+                </a>
+                {% if session.role == 'admin' %}
+                <a href="{{ url_for('upload') }}" class="flex items-center px-3 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900">
+                    <i class="fas fa-upload mr-3"></i>
+                    Upload Files
+                </a>
+                {% endif %}
+            </div>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+        <!-- Top Bar -->
+        <div class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between h-16 px-4">
+                <button id="openSidebar" class="lg:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200" title="Open sidebar">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                
+                <div class="flex-1 max-w-2xl mx-auto">
+                    <div class="relative">
+                        <input type="text" id="searchInput" placeholder="Search files..." 
+                               class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-search text-gray-400"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Area -->
+        <div class="flex-1 overflow-auto">
+            <div class="p-6">
+                <!-- Welcome Section -->
+                <div class="mb-8">
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                        Welcome back, {{ session.user_id.split('@')[0] }}!
+                    </h1>
+                    <p class="text-gray-600 dark:text-gray-400">
+                        Browse and download study materials from your dashboard.
+                    </p>
+                </div>
+
+                <!-- Admin Section -->
+                {% if session.role == 'admin' %}
+                <div class="mb-8">
+                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                        <i class="fas fa-shield-alt mr-2"></i>Admin Tools
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <a href="{{ url_for('upload') }}" class="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 p-6 border border-gray-200 dark:border-gray-700">
+                            <div class="flex items-center mb-4">
+                                <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-upload text-blue-600 dark:text-blue-400 text-xl"></i>
+                                </div>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Upload Files</h3>
+                            <p class="text-gray-600 dark:text-gray-400">Add new study materials to the platform.</p>
+                        </a>
+
+                        <a href="{{ url_for('document_scanner') }}" class="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 p-6 border border-gray-200 dark:border-gray-700">
+                            <div class="flex items-center mb-4">
+                                <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-camera text-purple-600 dark:text-purple-400 text-xl"></i>
+                                </div>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Document Scanner</h3>
+                            <p class="text-gray-600 dark:text-gray-400">Scan documents with camera and convert to PDF.</p>
+                        </a>
+
+                        <a href="{{ url_for('send_login_report') }}" class="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 p-6 border border-gray-200 dark:border-gray-700">
+                            <div class="flex items-center mb-4">
+                                <div class="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-chart-bar text-green-600 dark:text-green-400 text-xl"></i>
+                                </div>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Login Report</h3>
+                            <p class="text-gray-600 dark:text-gray-400">Generate and email Excel report of user logins.</p>
+                        </a>
+
+                        <a href="{{ url_for('login_stats') }}" class="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 p-6 border border-gray-200 dark:border-gray-700">
+                            <div class="flex items-center mb-4">
+                                <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-users text-purple-600 dark:text-purple-400 text-xl"></i>
+                                </div>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">User Stats</h3>
+                            <p class="text-gray-600 dark:text-gray-400">View real-time login statistics and analytics.</p>
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Quick Access Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                    <a href="{{ url_for('about') }}" class="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 p-6 border border-gray-200 dark:border-gray-700">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-info-circle text-blue-600 dark:text-blue-400 text-xl"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">About Us</h3>
+                        <p class="text-gray-600 dark:text-gray-400">Learn more about Legezt Portal and our mission.</p>
+                    </a>
+
+                    <a href="{{ url_for('college') }}" class="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 p-6 border border-gray-200 dark:border-gray-700">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-university text-green-600 dark:text-green-400 text-xl"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">College</h3>
+                        <p class="text-gray-600 dark:text-gray-400">Access study materials from various colleges.</p>
+                    </a>
+
+                    <a href="{{ url_for('settings') }}" class="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 p-6 border border-gray-200 dark:border-gray-700">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-cog text-purple-600 dark:text-purple-400 text-xl"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Settings</h3>
+                        <p class="text-gray-600 dark:text-gray-400">Manage your account preferences and settings.</p>
+                    </a>
+                </div>
+
+                <!-- Recent Files Section -->
+                <div class="mb-8">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+                            Recent Study Materials
+                        </h2>
+                        <a href="{{ url_for('college') }}" class="text-blue-600 dark:text-blue-400 hover:underline">
+                            View All
+                        </a>
+                    </div>
+
+                    {% if files %}
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {% for file in files[:3] %}
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 overflow-hidden">
+                            <div class="p-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+                                            <i class="fas fa-file-pdf text-blue-600 dark:text-blue-400"></i>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="text-xs text-gray-500 dark:text-gray-400">{{ file.download_count }} downloads</span>
+                                    </div>
+                                </div>
+                                
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2">
+                                    {{ file.title }}
+                                </h3>
+                                
+                                {% if file.description %}
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-3">
+                                    {{ file.description }}
+                                </p>
+                                {% endif %}
+                                
+                                <div class="space-y-2 mb-4">
+                                    <div class="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                                        <i class="fas fa-book mr-2"></i>
+                                        <span>{{ file.subject }}</span>
+                                    </div>
+                                    <div class="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                                        <i class="fas fa-graduation-cap mr-2"></i>
+                                        <span>{{ file.branch }}</span>
+                                    </div>
+                                    <div class="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                                        <i class="fas fa-user mr-2"></i>
+                                        <span>{{ file.uploader }}</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">
+                                        {{ file.upload_date if file.upload_date else 'N/A' }}
+                                    </span>
+                                    <div class="flex items-center space-x-2">
+                                        <a href="{{ url_for('download', file_id=file.id) }}" 
+                                           class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200">
+                                            <i class="fas fa-download mr-1"></i>
+                                            Download
+                                        </a>
+                                        {% if session.role == 'admin' %}
+                                        <a href="{{ url_for('edit_file', file_id=file.id) }}" 
+                                           class="inline-flex items-center px-3 py-1.5 border border-gray-300 dark:border-gray-600 text-xs font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200">
+                                            <i class="fas fa-edit mr-1"></i>
+                                            Edit
+                                        </a>
+                                        <button onclick="confirmDeleteFile({{ file.id }}, '{{ file.title }}')" 
+                                                class="inline-flex items-center px-3 py-1.5 border border-red-300 dark:border-red-600 text-xs font-medium rounded-md text-red-700 dark:text-red-300 bg-white dark:bg-gray-700 hover:bg-red-50 dark:hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-200">
+                                            <i class="fas fa-trash mr-1"></i>
+                                            Delete
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-12">
+                        <div class="mx-auto h-16 w-16 text-gray-400 mb-4">
+                            <i class="fas fa-folder-open text-5xl"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No Study Materials Available</h3>
+                        <p class="text-gray-600 dark:text-gray-400 mb-4">
+                            No study materials have been uploaded by the admin yet.
+                        </p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                            Check back later for new study materials.
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Overlay for mobile sidebar -->
+<div id="sidebarOverlay" class="fixed inset-0 bg-gray-600 bg-opacity-75 z-40 lg:hidden hidden"></div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
+        <div class="mt-3 text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900">
+                <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400"></i>
+            </div>
+            <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white mt-4">Delete File</h3>
+            <div class="mt-2 px-7 py-3">
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                    Are you sure you want to delete "<span id="deleteFileName"></span>"? This action cannot be undone.
+                </p>
+            </div>
+            <div class="items-center px-4 py-3">
+                <button id="confirmDelete" 
+                        class="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300">
+                    Delete File
+                </button>
+                <button id="cancelDelete" 
+                        class="px-4 py-2 bg-gray-300 text-gray-700 text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 mt-2">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Sidebar functionality
+const sidebar = document.getElementById('sidebar');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
+const openSidebarBtn = document.getElementById('openSidebar');
+const closeSidebarBtn = document.getElementById('closeSidebar');
+
+function openSidebar() {
+    sidebar.classList.remove('-translate-x-full');
+    sidebarOverlay.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeSidebar() {
+    sidebar.classList.add('-translate-x-full');
+    sidebarOverlay.classList.add('hidden');
+    document.body.style.overflow = 'auto';
+}
+
+openSidebarBtn.addEventListener('click', openSidebar);
+closeSidebarBtn.addEventListener('click', closeSidebar);
+sidebarOverlay.addEventListener('click', closeSidebar);
+
+// Search functionality
+const searchInput = document.getElementById('searchInput');
+let searchTimeout;
+
+searchInput.addEventListener('input', (e) => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        const searchTerm = e.target.value.toLowerCase();
+        // Implement search functionality here
+        console.log('Searching for:', searchTerm);
+    }, 300);
+});
+
+// Delete file confirmation
+function confirmDeleteFile(fileId, fileName) {
+    document.getElementById('deleteFileName').textContent = fileName;
+    document.getElementById('deleteModal').classList.remove('hidden');
+    
+    // Set up confirm button action
+    document.getElementById('confirmDelete').onclick = function() {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/file/delete/${fileId}`;
+        document.body.appendChild(form);
+        form.submit();
+    };
+}
+
+// Modal controls
+document.getElementById('cancelDelete').addEventListener('click', function() {
+    document.getElementById('deleteModal').classList.add('hidden');
+});
+
+// Close modal on outside click
+document.getElementById('deleteModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        this.classList.add('hidden');
+    }
+});
+</script>
+{% endblock %} 

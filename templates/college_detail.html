@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}{{ college.name }} - Legezt Portal{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <!-- Breadcrumb Navigation -->
+    <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center space-x-4 py-4">
+                <a href="{{ url_for('college') }}" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                    <i class="fas fa-university mr-2"></i>Colleges
+                </a>
+                <i class="fas fa-chevron-right text-gray-400"></i>
+                <span class="text-gray-900 dark:text-white font-medium">{{ college.name }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                        <i class="fas fa-university mr-3"></i>{{ college.name }}
+                    </h1>
+                    <p class="text-gray-600 dark:text-gray-400 mb-2">
+                        <i class="fas fa-map-marker-alt mr-2"></i>{{ college.location }}
+                    </p>
+                    {% if college.description %}
+                    <p class="text-gray-600 dark:text-gray-400">{{ college.description }}</p>
+                    {% endif %}
+                </div>
+                <a href="{{ url_for('college') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    Back to Colleges
+                </a>
+            </div>
+        </div>
+
+        <!-- Year Selection -->
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-6">
+                <i class="fas fa-calendar-alt mr-3"></i>Select Academic Year
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {% for year in years %}
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 overflow-hidden border border-gray-200 dark:border-gray-700">
+                    <div class="p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-calendar text-blue-600 dark:text-blue-400 text-xl"></i>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ year.name }}</h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">{{ year.semesters|length }} semesters</p>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-2 mb-4">
+                            {% for semester in year.semesters %}
+                            <div class="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                                <i class="fas fa-graduation-cap mr-2 text-blue-500"></i>
+                                <span>{{ semester.name }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <a href="{{ url_for('college_year', college_id=college.id, year_id=year.id) }}" 
+                           class="inline-flex items-center justify-center w-full px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200">
+                            <i class="fas fa-arrow-right mr-2"></i>
+                            Browse {{ year.name }}
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-book text-green-600 dark:text-green-400 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Study Materials</h3>
+                        <p class="text-2xl font-bold text-green-600 dark:text-green-400">0</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-graduation-cap text-blue-600 dark:text-blue-400 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Branches</h3>
+                        <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">4</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-users text-purple-600 dark:text-purple-400 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Students</h3>
+                        <p class="text-2xl font-bold text-purple-600 dark:text-purple-400">0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                <i class="fas fa-clock mr-2"></i>Recent Activity
+            </h3>
+            <div class="text-center py-8">
+                <div class="mx-auto h-16 w-16 text-gray-400 mb-4">
+                    <i class="fas fa-inbox text-4xl"></i>
+                </div>
+                <p class="text-gray-600 dark:text-gray-400">No recent activity</p>
+                <p class="text-sm text-gray-500 dark:text-gray-500">Study materials will appear here once uploaded</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Add any interactive features here
+document.addEventListener('DOMContentLoaded', function() {
+    // Year card hover effects
+    const yearCards = document.querySelectorAll('.year-card');
+    yearCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Legezt Portal{% endblock %}</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon_io/favicon.ico') }}">
+    <link rel="shortcut icon" type="image/x-icon" href="{{ url_for('static', filename='favicon_io/favicon.ico') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='favicon_io/apple-touch-icon.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon_io/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon_io/favicon-16x16.png') }}">
+    <link rel="manifest" href="{{ url_for('static', filename='favicon_io/site.webmanifest') }}">
+    
+    <!-- Tailwind CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/output.css') }}">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <!-- Dark mode script -->
+    <script>
+        // Check for saved dark mode preference
+        if (localStorage.getItem('darkMode') === 'true' || 
+            (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200">
+    
+    <!-- Navigation -->
+    <nav class="bg-white dark:bg-gray-800 shadow-lg border-b border-gray-200 dark:border-gray-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="{{ url_for('home') }}" class="flex-shrink-0 flex items-center">
+                        <img src="{{ url_for('static', filename='images/legezt.png') }}" alt="Legezt Portal Logo" class="h-10 w-auto mr-3" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+                        <i class="fas fa-graduation-cap text-2xl text-blue-600 dark:text-blue-400 mr-2" style="display: none;"></i>
+                        <span class="text-xl font-bold text-gray-900 dark:text-white">Legezt Portal</span>
+                    </a>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    {% if session.user_id %}
+                        <div class="hidden md:flex items-center space-x-4">
+                            <a href="{{ url_for('dashboard') }}" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-3 py-2 rounded-md text-sm font-medium">
+                                <i class="fas fa-home mr-1"></i>Dashboard
+                            </a>
+                            {% if session.role == 'admin' %}
+                                <a href="{{ url_for('upload') }}" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-3 py-2 rounded-md text-sm font-medium">
+                                    <i class="fas fa-upload mr-1"></i>Upload
+                                </a>
+                            {% endif %}
+                            <a href="{{ url_for('settings') }}" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-3 py-2 rounded-md text-sm font-medium">
+                                <i class="fas fa-cog mr-1"></i>Settings
+                            </a>
+                        </div>
+                        
+                        <!-- User menu -->
+                        <div class="relative">
+                            <button id="userMenuBtn" class="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                <div class="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold">
+                                    {{ session.user_id[0].upper() }}
+                                </div>
+                                <span class="ml-2 hidden md:block">{{ session.user_id.split('@')[0] }}</span>
+                                <i class="fas fa-chevron-down ml-1"></i>
+                            </button>
+                            
+                            <div id="userMenu" class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-50">
+                                <div class="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700">
+                                    <div class="font-medium">{{ session.user_id.split('@')[0] }}</div>
+                                    <div class="text-gray-500 dark:text-gray-400">{{ session.user_id }}</div>
+                                    <div class="text-xs text-blue-600 dark:text-blue-400 capitalize">{{ session.role }}</div>
+                                </div>
+                                <a href="{{ url_for('settings') }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    <i class="fas fa-user mr-2"></i>Profile
+                                </a>
+                                <a href="{{ url_for('logout') }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                                </a>
+                            </div>
+                        </div>
+                    {% else %}
+                        <a href="{{ url_for('login') }}" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-3 py-2 rounded-md text-sm font-medium">
+                            <i class="fas fa-sign-in-alt mr-1"></i>Login
+                        </a>
+                        <a href="{{ url_for('register') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                            <i class="fas fa-user-plus mr-1"></i>Register
+                        </a>
+                    {% endif %}
+                    
+                    <!-- Dark mode toggle -->
+                    <button id="darkModeToggle" class="p-2 rounded-md text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400" title="Toggle dark mode">
+                        <i class="fas fa-moon dark:hidden"></i>
+                        <i class="fas fa-sun hidden dark:block"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'error' if category == 'error' else 'success' }} mb-4 p-4 rounded-md border-l-4 {% if category == 'error' %}bg-red-50 border-red-400 text-red-700{% else %}bg-green-50 border-green-400 text-green-700{% endif %}">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                {% if category == 'error' %}
+                                    <i class="fas fa-exclamation-circle"></i>
+                                {% else %}
+                                    <i class="fas fa-check-circle"></i>
+                                {% endif %}
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm">{{ message }}</p>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Main content -->
+    <main class="flex-1">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-auto">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <div class="text-center text-gray-500 dark:text-gray-400">
+                <p>&copy; 2024 Legezt Portal. All rights reserved.</p>
+                <p class="mt-1 text-sm">Empowering students with quality educational resources</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html> 

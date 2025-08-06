@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Verification - Legezt Portal{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
+        <div>
+            <div class="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-900">
+                <i class="fas fa-clock text-2xl text-yellow-600 dark:text-yellow-400"></i>
+            </div>
+            <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
+                Admin Verification Required
+            </h2>
+            <p class="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
+                Please enter the access code sent to your email
+            </p>
+        </div>
+        
+        <form class="mt-8 space-y-6" method="POST" id="verificationForm">
+            <div>
+                <label for="access_code" class="sr-only">Access Code</label>
+                <input id="access_code" name="access_code" type="text" required 
+                       class="appearance-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm bg-white dark:bg-gray-700 text-center text-2xl tracking-widest"
+                       placeholder="000000" maxlength="6">
+            </div>
+
+            <div class="space-y-3">
+                <button type="submit" 
+                        class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200">
+                    <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+                        <i class="fas fa-check text-blue-500 group-hover:text-blue-400"></i>
+                    </span>
+                    Verify Access Code
+                </button>
+                
+                <form method="POST" action="{{ url_for('resend_verification') }}" class="w-full">
+                    <button type="submit" 
+                            class="group relative w-full flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200"
+                            onclick="return confirm('Are you sure you want to resend the verification email? This will generate a new access code.')">
+                        <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+                            <i class="fas fa-paper-plane text-gray-400 group-hover:text-gray-500"></i>
+                        </span>
+                        Resend Verification Email
+                    </button>
+                </form>
+            </div>
+        </form>
+
+        <div class="bg-blue-50 dark:bg-blue-900 p-4 rounded-md">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-info-circle text-blue-400"></i>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-blue-800 dark:text-blue-200">Verification Process</h3>
+                    <div class="mt-2 text-sm text-blue-700 dark:text-blue-300">
+                        <p>Your admin request is being reviewed. You will receive an access code via email once approved. This process typically takes 24 hours.</p>
+                        <p class="mt-2"><strong>💡 Tip:</strong> If you haven't received the email or need a new code, use the "Resend Verification Email" button below.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center">
+            <a href="{{ url_for('logout') }}" class="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400">
+                <i class="fas fa-sign-out-alt mr-1"></i>Logout
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Auto-focus on access code input
+document.getElementById('access_code').focus();
+
+// Format access code input (6 digits only)
+document.getElementById('access_code').addEventListener('input', function(e) {
+    // Remove non-numeric characters
+    this.value = this.value.replace(/\D/g, '');
+    
+    // Limit to 6 digits
+    if (this.value.length > 6) {
+        this.value = this.value.slice(0, 6);
+    }
+});
+
+// Form validation
+document.getElementById('verificationForm').addEventListener('submit', function(e) {
+    const accessCode = document.getElementById('access_code').value;
+    
+    if (!accessCode || accessCode.length !== 6) {
+        e.preventDefault();
+        alert('Please enter a valid 6-digit access code');
+        return;
+    }
+    
+    // Check if code contains only numbers
+    if (!/^\d{6}$/.test(accessCode)) {
+        e.preventDefault();
+        alert('Access code must contain only numbers');
+        return;
+    }
+});
+
+// Auto-submit when 6 digits are entered
+document.getElementById('access_code').addEventListener('input', function() {
+    if (this.value.length === 6) {
+        document.getElementById('verificationForm').submit();
+    }
+});
+</script>
+{% endblock %} 

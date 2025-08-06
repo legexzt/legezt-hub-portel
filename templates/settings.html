@@ -1,0 +1,366 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - Legezt Portal{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Settings</h1>
+                    <p class="mt-2 text-gray-600 dark:text-gray-400">Manage your account and preferences</p>
+                </div>
+                <a href="{{ url_for('dashboard') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    Back to Menu
+                </a>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Navigation -->
+            <div class="lg:col-span-1">
+                <nav class="space-y-1">
+                    <a href="#profile" class="bg-blue-50 dark:bg-blue-900 border-blue-500 text-blue-700 dark:text-blue-300 group flex items-center px-3 py-2 text-sm font-medium border-l-4">
+                        <i class="fas fa-user mr-3"></i>
+                        Profile
+                    </a>
+                    <a href="#security" class="border-transparent text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white group flex items-center px-3 py-2 text-sm font-medium border-l-4">
+                        <i class="fas fa-shield-alt mr-3"></i>
+                        Security
+                    </a>
+                    <a href="#preferences" class="border-transparent text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white group flex items-center px-3 py-2 text-sm font-medium border-l-4">
+                        <i class="fas fa-cog mr-3"></i>
+                        Preferences
+                    </a>
+                    <a href="#notifications" class="border-transparent text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white group flex items-center px-3 py-2 text-sm font-medium border-l-4">
+                        <i class="fas fa-bell mr-3"></i>
+                        Notifications
+                    </a>
+                    {% if session.role == 'admin' %}
+                    <a href="#google-drive" class="border-transparent text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white group flex items-center px-3 py-2 text-sm font-medium border-l-4">
+                        <i class="fab fa-google-drive mr-3"></i>
+                        Google Drive
+                    </a>
+                    {% endif %}
+                </nav>
+            </div>
+
+            <!-- Content -->
+            <div class="lg:col-span-2 space-y-8">
+                <!-- Profile Section -->
+                <div id="profile" class="bg-white dark:bg-gray-800 shadow rounded-lg">
+                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white">Profile Information</h3>
+                    </div>
+                    <div class="p-6">
+                        <form class="space-y-6">
+                            <div class="flex items-center space-x-6">
+                                <div class="flex-shrink-0">
+                                    <div class="h-16 w-16 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold text-xl">
+                                        {{ session.user_id[0].upper() }}
+                                    </div>
+                                </div>
+                                <div>
+                                    <button type="button" class="bg-white dark:bg-gray-700 py-2 px-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                        Change Photo
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">First Name</label>
+                                    <input type="text" value="{{ session.user_id.split('@')[0] }}" 
+                                           class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                           placeholder="First Name">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Last Name</label>
+                                    <input type="text" value="User" 
+                                           class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                           placeholder="Last Name">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+                                <input type="email" value="{{ session.user_id }}" readonly
+                                       class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-50 dark:bg-gray-600 sm:text-sm text-gray-500 dark:text-gray-400"
+                                       placeholder="Email">
+                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Email cannot be changed</p>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Role</label>
+                                <input type="text" value="{{ session.role|title }}" readonly
+                                       class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-50 dark:bg-gray-600 sm:text-sm text-gray-500 dark:text-gray-400"
+                                       placeholder="Role">
+                            </div>
+
+                            <div class="flex justify-end">
+                                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                                    Save Changes
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Security Section -->
+                <div id="security" class="bg-white dark:bg-gray-800 shadow rounded-lg">
+                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white">Security</h3>
+                    </div>
+                    <div class="p-6 space-y-6">
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-900 dark:text-white">Change Password</h4>
+                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Update your password to keep your account secure.</p>
+                            <button type="button" class="mt-3 bg-white dark:bg-gray-700 py-2 px-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                Change Password
+                            </button>
+                        </div>
+
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-900 dark:text-white">Two-Factor Authentication</h4>
+                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Add an extra layer of security to your account.</p>
+                            <button type="button" class="mt-3 bg-white dark:bg-gray-700 py-2 px-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                Enable 2FA
+                            </button>
+                        </div>
+
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-900 dark:text-white">Active Sessions</h4>
+                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Manage your active sessions across devices.</p>
+                            <button type="button" class="mt-3 bg-white dark:bg-gray-700 py-2 px-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                View Sessions
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preferences Section -->
+                <div id="preferences" class="bg-white dark:bg-gray-800 shadow rounded-lg">
+                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white">Preferences</h3>
+                    </div>
+                    <div class="p-6 space-y-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="text-sm font-medium text-gray-900 dark:text-white">Dark Mode</h4>
+                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Switch between light and dark themes.</p>
+                            </div>
+                            <button id="darkModeToggle" type="button" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 bg-gray-200 dark:bg-blue-600" role="switch" aria-checked="false" title="Toggle dark mode">
+                                <span id="darkModeToggleThumb" class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-0 dark:translate-x-5"></span>
+                            </button>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="text-sm font-medium text-gray-900 dark:text-white">Email Notifications</h4>
+                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Receive email notifications for new materials.</p>
+                            </div>
+                            <button type="button" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 bg-blue-600" role="switch" aria-checked="true" title="Toggle email notifications">
+                                <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-5"></span>
+                            </button>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="text-sm font-medium text-gray-900 dark:text-white">Download History</h4>
+                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Keep track of your downloaded files.</p>
+                            </div>
+                            <button type="button" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 bg-gray-200" role="switch" aria-checked="false" title="Toggle download history">
+                                <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-0"></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notifications Section -->
+                <div id="notifications" class="bg-white dark:bg-gray-800 shadow rounded-lg">
+                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white">Notification Settings</h3>
+                    </div>
+                    <div class="p-6 space-y-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="text-sm font-medium text-gray-900 dark:text-white">New Materials</h4>
+                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Get notified when new study materials are uploaded.</p>
+                            </div>
+                            <button type="button" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 bg-blue-600" role="switch" aria-checked="true" title="Toggle new materials notifications">
+                                <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-5"></span>
+                            </button>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="text-sm font-medium text-gray-900 dark:text-white">Admin Updates</h4>
+                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Receive updates about admin verification status.</p>
+                            </div>
+                            <button type="button" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 bg-blue-600" role="switch" aria-checked="true" title="Toggle admin updates notifications">
+                                <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-5"></span>
+                            </button>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="text-sm font-medium text-gray-900 dark:text-white">Weekly Digest</h4>
+                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Get a weekly summary of new materials and updates.</p>
+                            </div>
+                            <button type="button" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 bg-gray-200" role="switch" aria-checked="false" title="Toggle weekly digest notifications">
+                                <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-0"></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Google Drive Section (Admin Only) -->
+                {% if session.role == 'admin' %}
+                <div id="google-drive" class="bg-white dark:bg-gray-800 shadow rounded-lg">
+                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white">Google Drive Integration</h3>
+                    </div>
+                    <div class="p-6 space-y-6">
+                        <div class="bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
+                            <div class="flex items-center">
+                                <i class="fab fa-google-drive text-blue-600 dark:text-blue-400 text-xl mr-3"></i>
+                                <div>
+                                    <h4 class="text-sm font-medium text-blue-900 dark:text-blue-100">Google Drive Status</h4>
+                                    <p class="text-sm text-blue-700 dark:text-blue-300">
+                                        {% if google_drive_connected %}
+                                            ✅ Connected to Google Drive
+                                        {% else %}
+                                            ❌ Not connected to Google Drive
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div>
+                                <h4 class="text-sm font-medium text-gray-900 dark:text-white">Connection Management</h4>
+                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Manage your Google Drive connection for file storage.</p>
+                            </div>
+
+                            {% if google_drive_connected %}
+                            <div class="bg-yellow-50 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4">
+                                <div class="flex items-start">
+                                    <i class="fas fa-exclamation-triangle text-yellow-600 dark:text-yellow-400 mt-0.5 mr-3"></i>
+                                    <div>
+                                        <h5 class="text-sm font-medium text-yellow-900 dark:text-yellow-100">Disconnect Google Drive</h5>
+                                        <p class="text-sm text-yellow-700 dark:text-yellow-300 mt-1">
+                                            Disconnecting will remove the Google Drive integration. All files will remain in Google Drive, but new uploads will not work until reconnected.
+                                        </p>
+                                        <div class="mt-3">
+                                            <form method="POST" action="{{ url_for('disconnect_google_drive') }}" onsubmit="return confirm('Are you sure you want to disconnect Google Drive? This will prevent new file uploads until reconnected.')">
+                                                <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-200">
+                                                    <i class="fas fa-unlink mr-2"></i>
+                                                    Disconnect Google Drive
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-700 rounded-lg p-4">
+                                <div class="flex items-start">
+                                    <i class="fas fa-link text-green-600 dark:text-green-400 mt-0.5 mr-3"></i>
+                                    <div>
+                                        <h5 class="text-sm font-medium text-green-900 dark:text-green-100">Connect Google Drive</h5>
+                                        <p class="text-sm text-green-700 dark:text-green-300 mt-1">
+                                            Connect your Google Drive to enable file uploads and storage.
+                                        </p>
+                                        <div class="mt-3">
+                                            <a href="{{ url_for('connect_google_drive') }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-200 inline-flex items-center">
+                                                <i class="fab fa-google-drive mr-2"></i>
+                                                Connect Google Drive
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Dark mode toggle functionality
+const darkModeToggle = document.getElementById('darkModeToggle');
+const darkModeToggleThumb = document.getElementById('darkModeToggleThumb');
+const html = document.documentElement;
+
+// Check current dark mode state
+const isDarkMode = localStorage.getItem('darkMode') === 'true' || 
+                   (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+// Set initial state
+if (isDarkMode) {
+    html.classList.add('dark');
+    darkModeToggle.setAttribute('aria-checked', 'true');
+    darkModeToggle.classList.add('bg-blue-600');
+    darkModeToggle.classList.remove('bg-gray-200');
+    darkModeToggleThumb.classList.add('translate-x-5');
+    darkModeToggleThumb.classList.remove('translate-x-0');
+}
+
+darkModeToggle.addEventListener('click', function() {
+    const isCurrentlyDark = html.classList.contains('dark');
+    
+    if (isCurrentlyDark) {
+        // Switch to light mode
+        html.classList.remove('dark');
+        localStorage.setItem('darkMode', 'false');
+        darkModeToggle.setAttribute('aria-checked', 'false');
+        darkModeToggle.classList.remove('bg-blue-600');
+        darkModeToggle.classList.add('bg-gray-200');
+        darkModeToggleThumb.classList.remove('translate-x-5');
+        darkModeToggleThumb.classList.add('translate-x-0');
+    } else {
+        // Switch to dark mode
+        html.classList.add('dark');
+        localStorage.setItem('darkMode', 'true');
+        darkModeToggle.setAttribute('aria-checked', 'true');
+        darkModeToggle.classList.add('bg-blue-600');
+        darkModeToggle.classList.remove('bg-gray-200');
+        darkModeToggleThumb.classList.add('translate-x-5');
+        darkModeToggleThumb.classList.remove('translate-x-0');
+    }
+});
+
+// Navigation functionality
+document.querySelectorAll('nav a').forEach(link => {
+    link.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        // Remove active state from all links
+        document.querySelectorAll('nav a').forEach(l => {
+            l.classList.remove('bg-blue-50', 'dark:bg-blue-900', 'border-blue-500', 'text-blue-700', 'dark:text-blue-300');
+            l.classList.add('border-transparent', 'text-gray-600', 'dark:text-gray-300');
+        });
+        
+        // Add active state to clicked link
+        this.classList.remove('border-transparent', 'text-gray-600', 'dark:text-gray-300');
+        this.classList.add('bg-blue-50', 'dark:bg-blue-900', 'border-blue-500', 'text-blue-700', 'dark:text-blue-300');
+        
+        // Scroll to section
+        const targetId = this.getAttribute('href').substring(1);
+        const targetSection = document.getElementById(targetId);
+        if (targetSection) {
+            targetSection.scrollIntoView({ behavior: 'smooth' });
+        }
+    });
+});
+</script>
+{% endblock %} 

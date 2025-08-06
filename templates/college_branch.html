@@ -1,0 +1,378 @@
+{% extends "base.html" %}
+
+{% block title %}{{ college.name }} - {{ year.name }} - {{ semester.name }} - {{ branch.name }} - Legezt Portal{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <!-- Breadcrumb Navigation -->
+    <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center space-x-4 py-4">
+                <a href="{{ url_for('college') }}" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                    <i class="fas fa-university mr-2"></i>Colleges
+                </a>
+                <i class="fas fa-chevron-right text-gray-400"></i>
+                <a href="{{ url_for('college_detail', college_id=college.id) }}" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                    {{ college.name }}
+                </a>
+                <i class="fas fa-chevron-right text-gray-400"></i>
+                <a href="{{ url_for('college_year', college_id=college.id, year_id=year.id) }}" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                    {{ year.name }}
+                </a>
+                <i class="fas fa-chevron-right text-gray-400"></i>
+                <a href="{{ url_for('college_semester', college_id=college.id, year_id=year.id, semester_id=semester.id) }}" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                    {{ semester.name }}
+                </a>
+                <i class="fas fa-chevron-right text-gray-400"></i>
+                <span class="text-gray-900 dark:text-white font-medium">{{ branch.name }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                        <i class="fas fa-sitemap mr-3"></i>{{ branch.name }}
+                    </h1>
+                    <p class="text-gray-600 dark:text-gray-400 mb-2">
+                        <i class="fas fa-university mr-2"></i>{{ college.name }} - {{ year.name }} - {{ semester.name }}
+                    </p>
+                    <p class="text-gray-600 dark:text-gray-400">
+                        Select a subject to browse study materials and resources.
+                    </p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    {% if session.role == 'admin' %}
+                    <button onclick="addSubject()" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-200">
+                        <i class="fas fa-plus mr-2"></i>
+                        Add Subject
+                    </button>
+                    {% endif %}
+                    <a href="{{ url_for('college_semester', college_id=college.id, year_id=year.id, semester_id=semester.id) }}" class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Back to {{ semester.name }}
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Subject Selection -->
+        <div class="mb-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+                    <i class="fas fa-book mr-3"></i>Select Subject
+                </h2>
+                {% if session.role == 'admin' %}
+                <a href="{{ url_for('add_subject', college_id=college.id, year_id=year.id, semester_id=semester.id, branch_id=branch.id) }}" 
+                   class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-200">
+                    <i class="fas fa-plus mr-2"></i>
+                    Add Subject
+                </a>
+                {% endif %}
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for subject in subjects %}
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 overflow-hidden border border-gray-200 dark:border-gray-700">
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-book text-orange-600 dark:text-orange-400 text-xl"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ subject.name }}</h3>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ branch.name }}</p>
+                                </div>
+                            </div>
+                            {% if session.role == 'admin' %}
+                            <div class="flex space-x-2">
+                                <a href="{{ url_for('edit_subject', college_id=college.id, year_id=year.id, semester_id=semester.id, branch_id=branch.id, subject_id=subject.id) }}" 
+                                   class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300" 
+                                   title="Edit Subject">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button onclick="deleteSubject({{ subject.id }}, '{{ subject.name }}')" 
+                                        class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300" 
+                                        title="Delete Subject">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        {% if subject.description %}
+                        <div class="mb-4">
+                            <p class="text-sm text-gray-600 dark:text-gray-400">{{ subject.description }}</p>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="space-y-3 mb-6">
+                            <div class="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                                <i class="fas fa-file-pdf mr-2 text-red-500"></i>
+                                <span>Study materials & notes</span>
+                            </div>
+                            <div class="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                                <i class="fas fa-download mr-2 text-green-500"></i>
+                                <span>Easy download access</span>
+                            </div>
+                            <div class="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                                <i class="fas fa-clock mr-2 text-blue-500"></i>
+                                <span>Regular updates</span>
+                            </div>
+                        </div>
+                        
+                        <a href="{{ url_for('college_subject', college_id=college.id, year_id=year.id, semester_id=semester.id, branch_id=branch.id, subject_name=subject.name) }}" 
+                           class="inline-flex items-center justify-center w-full px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition duration-200">
+                            <i class="fas fa-arrow-right mr-2"></i>
+                            Browse {{ subject.name }}
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Branch Information -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                    <i class="fas fa-info-circle mr-2"></i>Branch Info
+                </h3>
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600 dark:text-gray-400">Branch:</span>
+                        <span class="font-semibold text-gray-900 dark:text-white">{{ branch.name }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600 dark:text-gray-400">Semester:</span>
+                        <span class="font-semibold text-gray-900 dark:text-white">{{ semester.name }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600 dark:text-gray-400">Available Subjects:</span>
+                        <span class="font-semibold text-gray-900 dark:text-white">{{ subjects|length }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                    <i class="fas fa-chart-bar mr-2"></i>Statistics
+                </h3>
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600 dark:text-gray-400">Total Materials:</span>
+                        <span class="font-semibold text-gray-900 dark:text-white">{{ files|length }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600 dark:text-gray-400">Total Downloads:</span>
+                        <span class="font-semibold text-gray-900 dark:text-white">{{ files|sum(attribute='download_count') }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600 dark:text-gray-400">Active Subjects:</span>
+                        <span class="font-semibold text-gray-900 dark:text-white">{{ subjects|length }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                    <i class="fas fa-list mr-2"></i>Subject List
+                </h3>
+                <div class="space-y-2">
+                    {% for subject in subjects %}
+                    <div class="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700 last:border-b-0">
+                        <span class="text-gray-700 dark:text-gray-300">{{ subject.name }}</span>
+                        <div class="flex items-center space-x-2">
+                            <a href="{{ url_for('college_subject', college_id=college.id, year_id=year.id, semester_id=semester.id, branch_id=branch.id, subject_name=subject.name) }}" 
+                               class="text-orange-600 hover:text-orange-800 dark:text-orange-400 dark:hover:text-orange-300 text-sm">
+                                Browse
+                            </a>
+                            {% if session.role == 'admin' %}
+                            <a href="{{ url_for('edit_subject', college_id=college.id, year_id=year.id, semester_id=semester.id, branch_id=branch.id, subject_id=subject.id) }}" 
+                               class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm" 
+                               title="Edit Subject">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <button onclick="deleteSubject({{ subject.id }}, '{{ subject.name }}')" 
+                                    class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm" 
+                                    title="Delete Subject">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Materials -->
+        {% if files %}
+        <div class="mb-8">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                <i class="fas fa-clock mr-2"></i>Recent Study Materials
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for file in files[:6] %}
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-file-pdf text-blue-600 dark:text-blue-400"></i>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xs text-gray-500 dark:text-gray-400">{{ file.download_count }} downloads</span>
+                        </div>
+                    </div>
+                    
+                    <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2">
+                        {{ file.title }}
+                    </h4>
+                    
+                    {% if file.description %}
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-3">
+                        {{ file.description }}
+                    </p>
+                    {% endif %}
+                    
+                    <div class="space-y-2 mb-4">
+                        <div class="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                            <i class="fas fa-book mr-2"></i>
+                            <span>{{ file.subject }}</span>
+                        </div>
+                        <div class="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                            <i class="fas fa-user mr-2"></i>
+                            <span>{{ file.uploader }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-gray-500 dark:text-gray-400">
+                            {{ file.upload_date if file.upload_date else 'N/A' }}
+                        </span>
+                        <a href="{{ url_for('download', file_id=file.id) }}" 
+                           class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200">
+                            <i class="fas fa-download mr-1"></i>
+                            Download
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Quick Actions -->
+        {% if session.role == 'admin' %}
+        <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
+            <h3 class="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-4">
+                <i class="fas fa-tools mr-2"></i>Admin Actions
+            </h3>
+            <div class="flex flex-wrap gap-4">
+                <a href="{{ url_for('upload') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200">
+                    <i class="fas fa-upload mr-2"></i>
+                    Upload Materials
+                </a>
+                <button onclick="addSubject()" class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200">
+                    <i class="fas fa-plus mr-2"></i>
+                    Add New Subject
+                </button>
+                <button onclick="manageMaterials()" class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200">
+                    <i class="fas fa-cog mr-2"></i>
+                    Manage Materials
+                </button>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Add Subject Modal -->
+<div id="addSubjectModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
+        <div class="mt-3">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Add New Subject</h3>
+            <form id="addSubjectForm">
+                <div class="mb-4">
+                    <label for="subjectName" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Subject Name</label>
+                    <input type="text" id="subjectName" name="subjectName" required
+                           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                           placeholder="Enter subject name">
+                </div>
+                <div class="mb-4">
+                    <label for="subjectCode" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Subject Code (Optional)</label>
+                    <input type="text" id="subjectCode" name="subjectCode"
+                           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                           placeholder="Enter subject code">
+                </div>
+                <div class="flex items-center justify-end space-x-4">
+                    <button type="button" onclick="closeAddSubjectModal()" 
+                            class="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md w-24 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                        Cancel
+                    </button>
+                    <button type="submit" 
+                            class="px-4 py-2 bg-green-500 text-white text-base font-medium rounded-md w-24 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300">
+                        Add
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Add subject modal functionality
+function addSubject() {
+    document.getElementById('addSubjectModal').classList.remove('hidden');
+}
+
+function closeAddSubjectModal() {
+    document.getElementById('addSubjectModal').classList.add('hidden');
+    document.getElementById('addSubjectForm').reset();
+}
+
+// Add subject form submission
+document.getElementById('addSubjectForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const subjectName = document.getElementById('subjectName').value.trim();
+    
+    if (!subjectName) {
+        alert('Please enter a subject name.');
+        return;
+    }
+    
+    // Redirect to the add subject page
+    window.location.href = "{{ url_for('add_subject', college_id=college.id, year_id=year.id, semester_id=semester.id, branch_id=branch.id) }}";
+});
+
+// Delete subject function
+function deleteSubject(subjectId, subjectName) {
+    if (confirm(`Are you sure you want to delete the subject "${subjectName}"? This action cannot be undone.`)) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = "{{ url_for('delete_subject', college_id=college.id, year_id=year.id, semester_id=semester.id, branch_id=branch.id, subject_id=0) }}".replace('0', subjectId);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// Manage materials function
+function manageMaterials() {
+    alert('Material management feature would be implemented here.');
+}
+
+// Close modal when clicking outside
+document.getElementById('addSubjectModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeAddSubjectModal();
+    }
+});
+</script>
+{% endblock %} 

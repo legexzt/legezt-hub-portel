@@ -1,0 +1,1196 @@
+{% extends "base.html" %}
+
+{% block title %}Advanced Document Scanner - Legezt Portal{% endblock %}
+
+{% block head %}
+<!-- Cropper.js for image editing -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+<script>
+// Enhanced library loading with better error handling
+function loadLibrary(name, url, fallbackUrl = null) {
+    return new Promise((resolve, reject) => {
+        // Check if already loaded
+        if (window[name]) {
+            resolve();
+            return;
+        }
+        
+        const script = document.createElement('script');
+        script.src = url;
+        script.onload = () => {
+            console.log(`${name} loaded successfully`);
+            resolve();
+        };
+        script.onerror = () => {
+            if (fallbackUrl) {
+                console.log(`${name} failed to load from primary source, trying fallback...`);
+                const fallbackScript = document.createElement('script');
+                fallbackScript.src = fallbackUrl;
+                fallbackScript.onload = () => {
+                    console.log(`${name} loaded from fallback source`);
+                    resolve();
+                };
+                fallbackScript.onerror = () => {
+                    console.error(`Failed to load ${name} from all sources`);
+                    reject(new Error(`Failed to load ${name}`));
+                };
+                document.head.appendChild(fallbackScript);
+            } else {
+                reject(new Error(`Failed to load ${name}`));
+            }
+        };
+        document.head.appendChild(script);
+    });
+}
+
+// Load all required libraries
+async function loadAllLibraries() {
+    const libraries = [
+        { name: 'Webcam', url: 'https://cdnjs.cloudflare.com/ajax/libs/webcamjs/1.0.26/webcam.min.js', fallback: 'https://unpkg.com/webcamjs@1.0.26/webcam.min.js' },
+        { name: 'fabric', url: 'https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js' },
+        { name: 'Cropper', url: 'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js' }
+    ];
+    
+    try {
+        await Promise.all(libraries.map(lib => loadLibrary(lib.name, lib.url, lib.fallback)));
+        console.log('All libraries loaded successfully');
+        
+        // Verify Webcam is available
+        if (typeof Webcam === 'undefined') {
+            console.error('Webcam library not available after loading');
+            return false;
+        }
+        
+        console.log('Webcam library verified:', typeof Webcam);
+        return true;
+    } catch (error) {
+        console.error('Failed to load libraries:', error);
+        return false;
+    }
+}
+
+// Initialize library loading
+document.addEventListener('DOMContentLoaded', async function() {
+    console.log('=== DOM Content Loaded ===');
+    console.log('Starting library loading...');
+    console.log('Document ready state:', document.readyState);
+    
+    const librariesLoaded = await loadAllLibraries();
+    console.log('Library loading result:', librariesLoaded);
+    
+    if (librariesLoaded) {
+        console.log('Libraries loaded successfully, initializing scanner...');
+        initializeScanner();
+    } else {
+        console.log('Library loading failed, showing error...');
+        showLibraryError();
+    }
+});
+
+function showLibraryError() {
+    const cameraElement = document.getElementById('camera');
+    if (cameraElement) {
+        cameraElement.innerHTML = `
+            <div class="text-center text-white p-8">
+                <i class="fas fa-exclamation-triangle text-4xl mb-4 text-red-400"></i>
+                <h3 class="text-lg font-semibold mb-2">Library Loading Error</h3>
+                <p class="text-sm mb-4">Some required libraries failed to load. Please:</p>
+                <ul class="text-sm text-left max-w-md mx-auto space-y-1 mb-4">
+                    <li>• Check your internet connection</li>
+                    <li>• Refresh the page</li>
+                    <li>• Try using file upload instead</li>
+                </ul>
+                <button onclick="location.reload()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+                    <i class="fas fa-redo mr-2"></i>Refresh Page
+                </button>
+            </div>
+        `;
+    }
+}
+</script>
+<style>
+    .scanner-container {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+    }
+    
+    .camera-preview {
+        background: #000;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+    
+    .editor-canvas {
+        border: 2px dashed #ddd;
+        border-radius: 8px;
+        background: #f8f9fa;
+    }
+    
+    .filter-preview {
+        width: 60px;
+        height: 60px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+    
+    .filter-preview:hover {
+        transform: scale(1.1);
+    }
+    
+    .captured-image {
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        transition: transform 0.2s;
+    }
+    
+    .captured-image:hover {
+        transform: scale(1.05);
+    }
+    
+    .page-preview {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        padding: 10px;
+        margin: 10px;
+        position: relative;
+    }
+    
+    .page-number {
+        position: absolute;
+        top: -10px;
+        left: -10px;
+        background: #667eea;
+        color: white;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 12px;
+    }
+    
+    .loading-spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #667eea;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .vfx-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+        animation: shimmer 2s infinite;
+    }
+    
+    @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="scanner-container">
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <div class="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-white/20 backdrop-blur-sm mb-4">
+                <i class="fas fa-camera text-3xl text-white"></i>
+            </div>
+            <h1 class="text-4xl font-bold text-white mb-2">Advanced Document Scanner</h1>
+            <p class="text-white/80 text-lg">Capture, edit, and convert documents to PDF with professional quality</p>
+            <div class="mt-4 p-3 bg-blue-500/20 backdrop-blur-sm rounded-lg border border-blue-300">
+                <p class="text-white/90 text-sm">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    <strong>Note:</strong> Camera access requires HTTPS or localhost. If camera doesn't work, use the file upload option below.
+                </p>
+            </div>
+        </div>
+
+        <!-- Google Drive Status -->
+        {% if not google_drive_connected %}
+        <div class="bg-red-500/20 backdrop-blur-sm p-6 rounded-lg shadow-lg mb-6 border border-red-300">
+            <div class="flex items-center">
+                <i class="fas fa-exclamation-triangle text-red-400 text-2xl mr-4"></i>
+                <div>
+                    <h3 class="text-lg font-semibold text-white">Google Drive Not Connected</h3>
+                    <p class="text-white/80">Please connect Google Drive to save scanned documents.</p>
+                    <a href="{{ url_for('connect_google_drive') }}" 
+                       class="inline-flex items-center mt-3 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition duration-200">
+                        <i class="fas fa-link mr-2"></i>
+                        Connect Google Drive
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="bg-green-500/20 backdrop-blur-sm p-6 rounded-lg shadow-lg mb-6 border border-green-300">
+            <div class="flex items-center">
+                <i class="fas fa-check-circle text-green-400 text-2xl mr-4"></i>
+                <div>
+                    <h3 class="text-lg font-semibold text-white">Google Drive Connected</h3>
+                    <p class="text-white/80">Ready to save scanned documents to secure storage.</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Scanner Interface -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Camera Section -->
+            <div class="bg-white/10 backdrop-blur-sm rounded-lg p-6 shadow-lg border border-white/20">
+                <h2 class="text-2xl font-bold text-white mb-4">
+                    <i class="fas fa-camera mr-2"></i>
+                    Camera Capture
+                </h2>
+                
+                <!-- Camera Controls -->
+                <div class="flex flex-wrap gap-3 mb-4">
+                    <button id="startCamera" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-200">
+                        <i class="fas fa-play mr-2"></i>Start Camera
+                    </button>
+                    <button id="captureImage" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition duration-200" disabled>
+                        <i class="fas fa-camera mr-2"></i>Capture
+                    </button>
+                    <button id="stopCamera" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition duration-200" disabled>
+                        <i class="fas fa-stop mr-2"></i>Stop Camera
+                    </button>
+                    <button onclick="testCamera()" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg transition duration-200">
+                        <i class="fas fa-bug mr-2"></i>Test Camera
+                    </button>
+                    <button onclick="debugCamera()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition duration-200">
+                        <i class="fas fa-info-circle mr-2"></i>Debug Info
+                    </button>
+                </div>
+                
+                <!-- Camera Preview -->
+                <div class="camera-preview mb-4">
+                    <div id="camera" class="w-full h-64 flex items-center justify-center text-white">
+                        <div class="text-center">
+                            <i class="fas fa-camera text-4xl mb-2"></i>
+                            <p class="mb-2">Click "Start Camera" to begin</p>
+                            <p class="text-sm opacity-75">Camera access required for scanning</p>
+                            <p class="text-xs opacity-50 mt-2">If camera doesn't work, use file upload below</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- File Upload Alternative -->
+                <div class="mt-4">
+                    <label for="imageUpload" class="block text-sm font-medium text-white mb-2">Or upload images directly:</label>
+                    <input type="file" id="imageUpload" name="imageUpload" multiple accept="image/*" 
+                           class="block w-full text-sm text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
+                           title="Upload image files" aria-label="Upload image files">
+                </div>
+            </div>
+
+            <!-- Captured Images -->
+            <div class="bg-white/10 backdrop-blur-sm rounded-lg p-6 shadow-lg border border-white/20">
+                <h2 class="text-2xl font-bold text-white mb-4">
+                    <i class="fas fa-images mr-2"></i>
+                    Captured Pages
+                </h2>
+                
+                <div id="capturedImages" class="grid grid-cols-2 gap-4 max-h-96 overflow-y-auto">
+                    <div class="text-center text-white/60 py-8">
+                        <i class="fas fa-images text-3xl mb-2"></i>
+                        <p>No images captured yet</p>
+                    </div>
+                </div>
+                
+                <div class="mt-4 flex gap-2">
+                    <button id="editImages" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition duration-200" disabled>
+                        <i class="fas fa-edit mr-2"></i>Edit Images
+                    </button>
+                    <button id="convertToPdf" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition duration-200" disabled>
+                        <i class="fas fa-file-pdf mr-2"></i>Convert to PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Image Editor Modal -->
+        <div id="editorModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden z-50">
+            <div class="flex items-center justify-center min-h-screen p-4">
+                <div class="bg-white rounded-lg shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden">
+                    <!-- Editor Header -->
+                    <div class="bg-gray-800 text-white p-4 flex items-center justify-between">
+                        <h3 class="text-xl font-bold">
+                            <i class="fas fa-edit mr-2"></i>
+                            Advanced Image Editor
+                        </h3>
+                        <button id="closeEditor" class="text-white hover:text-red-400 transition duration-200" title="Close editor" aria-label="Close image editor">
+                            <i class="fas fa-times text-2xl"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Editor Content -->
+                    <div class="flex h-[calc(90vh-80px)]">
+                        <!-- Editor Canvas -->
+                        <div class="flex-1 p-4">
+                            <div class="bg-gray-100 rounded-lg p-4 h-full">
+                                <canvas id="editorCanvas" class="editor-canvas w-full h-full"></canvas>
+                            </div>
+                        </div>
+                        
+                        <!-- Editor Tools -->
+                        <div class="w-80 bg-gray-50 p-4 overflow-y-auto">
+                            <!-- Page Navigation -->
+                            <div class="mb-6">
+                                <h4 class="font-bold text-gray-800 mb-2">Page Navigation</h4>
+                                <div class="flex gap-2">
+                                    <button id="prevPage" class="bg-blue-600 text-white px-3 py-1 rounded" title="Previous page" aria-label="Go to previous page">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </button>
+                                    <span id="pageInfo" class="px-3 py-1 bg-gray-200 rounded">Page 1 of 1</span>
+                                    <button id="nextPage" class="bg-blue-600 text-white px-3 py-1 rounded" title="Next page" aria-label="Go to next page">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Crop Tools -->
+                            <div class="mb-6">
+                                <h4 class="font-bold text-gray-800 mb-2">Crop & Resize</h4>
+                                <div class="space-y-2">
+                                    <button id="cropTool" class="w-full bg-green-600 text-white px-3 py-2 rounded">
+                                        <i class="fas fa-crop mr-2"></i>Crop
+                                    </button>
+                                    <button id="autoCrop" class="w-full bg-blue-600 text-white px-3 py-2 rounded">
+                                        <i class="fas fa-magic mr-2"></i>Auto Crop
+                                    </button>
+                                    <button id="resetCrop" class="w-full bg-gray-600 text-white px-3 py-2 rounded">
+                                        <i class="fas fa-undo mr-2"></i>Reset
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Rotation -->
+                            <div class="mb-6">
+                                <h4 class="font-bold text-gray-800 mb-2">Rotation</h4>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button id="rotateLeft" class="bg-orange-600 text-white px-3 py-2 rounded">
+                                        <i class="fas fa-undo mr-1"></i>Left
+                                    </button>
+                                    <button id="rotateRight" class="bg-orange-600 text-white px-3 py-2 rounded">
+                                        <i class="fas fa-redo mr-1"></i>Right
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Filters -->
+                            <div class="mb-6">
+                                <h4 class="font-bold text-gray-800 mb-2">Filters & Effects</h4>
+                                <div class="grid grid-cols-3 gap-2">
+                                    <button class="filter-btn bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded text-xs" data-filter="none">None</button>
+                                    <button class="filter-btn bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded text-xs" data-filter="grayscale">B&W</button>
+                                    <button class="filter-btn bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded text-xs" data-filter="sepia">Sepia</button>
+                                    <button class="filter-btn bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded text-xs" data-filter="brightness">Bright</button>
+                                    <button class="filter-btn bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded text-xs" data-filter="contrast">Contrast</button>
+                                    <button class="filter-btn bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded text-xs" data-filter="sharpen">Sharpen</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Quality Settings -->
+                            <div class="mb-6">
+                                <h4 class="font-bold text-gray-800 mb-2">Quality Settings</h4>
+                                <div class="space-y-2">
+                                    <label for="brightness" class="block text-sm text-gray-600">Brightness</label>
+                                    <input type="range" id="brightness" name="brightness" min="0" max="200" value="100" class="w-full" title="Adjust brightness" aria-label="Adjust brightness">
+                                    
+                                    <label for="contrast" class="block text-sm text-gray-600">Contrast</label>
+                                    <input type="range" id="contrast" name="contrast" min="0" max="200" value="100" class="w-full" title="Adjust contrast" aria-label="Adjust contrast">
+                                    
+                                    <label for="saturation" class="block text-sm text-gray-600">Saturation</label>
+                                    <input type="range" id="saturation" name="saturation" min="0" max="200" value="100" class="w-full" title="Adjust saturation" aria-label="Adjust saturation">
+                                </div>
+                            </div>
+                            
+                            <!-- Save Changes -->
+                            <div class="mb-6">
+                                <button id="saveChanges" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">
+                                    <i class="fas fa-save mr-2"></i>Save Changes
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PDF Preview Modal -->
+        <div id="pdfModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden z-50">
+            <div class="flex items-center justify-center min-h-screen p-4">
+                <div class="bg-white rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+                    <!-- PDF Header -->
+                    <div class="bg-gray-800 text-white p-4 flex items-center justify-between">
+                        <h3 class="text-xl font-bold">
+                            <i class="fas fa-file-pdf mr-2"></i>
+                            PDF Preview & Upload
+                        </h3>
+                        <button id="closePdfModal" class="text-white hover:text-red-400 transition duration-200" title="Close PDF modal" aria-label="Close PDF preview modal">
+                            <i class="fas fa-times text-2xl"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- PDF Content -->
+                    <div class="p-6">
+                        <!-- Document Information -->
+                        <div class="mb-6">
+                            <h4 class="font-bold text-gray-800 mb-4">Document Information</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Title *</label>
+                                    <input type="text" id="pdfTitle" name="title" required
+                                           class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                           placeholder="e.g., Mathematics Notes">
+                                </div>
+                                <div>
+                                    <label for="pdfSubject" class="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                                    <select id="pdfSubject" name="subject"
+                                            class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                            title="Select subject" aria-label="Select subject">
+                                        <option value="">Select Subject</option>
+                                        {% for subject in subjects %}
+                                        <option value="{{ subject.name }}">{{ subject.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                                    <textarea id="pdfDescription" name="description" rows="2"
+                                              class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                              placeholder="Brief description of the document"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Branch</label>
+                                    <input type="text" id="pdfBranch" name="branch"
+                                           class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                           placeholder="e.g., CSE">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- PDF Preview -->
+                        <div class="mb-6">
+                            <h4 class="font-bold text-gray-800 mb-2">PDF Preview</h4>
+                            <div class="bg-gray-100 rounded-lg p-4 h-64 overflow-y-auto">
+                                <div id="pdfPreview" class="text-center text-gray-500 py-8">
+                                    <i class="fas fa-file-pdf text-4xl mb-2"></i>
+                                    <p>PDF will be generated here</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Upload Actions -->
+                        <div class="flex gap-4">
+                            <button id="downloadPdf" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg">
+                                <i class="fas fa-download mr-2"></i>Download PDF
+                            </button>
+                            <button id="uploadToDrive" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg">
+                                <i class="fas fa-cloud-upload-alt mr-2"></i>Upload to Google Drive
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden form for PDF upload -->
+<form id="pdfUploadForm" method="POST" enctype="multipart/form-data" class="hidden">
+    <input type="file" id="finalPdfInput" name="final_pdf" accept=".pdf" title="Final PDF file" aria-label="Final PDF file">
+    <input type="text" id="finalTitle" name="title" title="Document title" aria-label="Document title">
+    <input type="text" id="finalDescription" name="description" title="Document description" aria-label="Document description">
+    <input type="text" id="finalSubject" name="subject" title="Document subject" aria-label="Document subject">
+    <input type="text" id="finalBranch" name="branch" title="Document branch" aria-label="Document branch">
+    <input type="text" id="finalYear" name="year" title="Document year" aria-label="Document year">
+</form>
+
+<script>
+// Check if all required libraries are loaded
+function checkLibraries() {
+    const missing = [];
+    
+    if (typeof Webcam === 'undefined') {
+        missing.push('Webcam.js');
+    }
+    if (typeof fabric === 'undefined') {
+        missing.push('Fabric.js');
+    }
+    if (typeof Cropper === 'undefined') {
+        missing.push('Cropper.js');
+    }
+    
+    if (missing.length > 0) {
+        console.error('Missing libraries:', missing);
+        showNotification(`Missing libraries: ${missing.join(', ')}. Please refresh the page.`, 'error');
+        return false;
+    }
+    
+    return true;
+}
+
+// Global variables
+let capturedImages = [];
+let currentPageIndex = 0;
+let editorCanvas = null;
+let cropper = null;
+let webcam = null;
+
+// Initialize scanner - this is now called by the library loading system
+function initializeScanner() {
+    console.log('Initializing scanner...');
+    
+    // Camera controls
+    document.getElementById('startCamera').addEventListener('click', startCamera);
+    document.getElementById('captureImage').addEventListener('click', captureImage);
+    document.getElementById('stopCamera').addEventListener('click', stopCamera);
+    
+    // File upload
+    document.getElementById('imageUpload').addEventListener('change', handleFileUpload);
+    
+    // Editor controls
+    document.getElementById('editImages').addEventListener('click', openEditor);
+    document.getElementById('convertToPdf').addEventListener('click', convertToPdf);
+    document.getElementById('closeEditor').addEventListener('click', closeEditor);
+    document.getElementById('closePdfModal').addEventListener('click', closePdfModal);
+    
+    // Editor tools
+    document.getElementById('prevPage').addEventListener('click', () => changePage(-1));
+    document.getElementById('nextPage').addEventListener('click', () => changePage(1));
+    document.getElementById('saveChanges').addEventListener('click', saveChanges);
+    
+    // Crop tools
+    document.getElementById('cropTool').addEventListener('click', enableCrop);
+    document.getElementById('autoCrop').addEventListener('click', autoCrop);
+    document.getElementById('resetCrop').addEventListener('click', resetCrop);
+    
+    // Rotation
+    document.getElementById('rotateLeft').addEventListener('click', () => rotate(-90));
+    document.getElementById('rotateRight').addEventListener('click', () => rotate(90));
+    
+    // Filters
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => applyFilter(btn.dataset.filter));
+    });
+    
+    // Quality controls
+    document.getElementById('brightness').addEventListener('input', updateQuality);
+    document.getElementById('contrast').addEventListener('input', updateQuality);
+    document.getElementById('saturation').addEventListener('input', updateQuality);
+    
+    // PDF actions
+    document.getElementById('downloadPdf').addEventListener('click', downloadPdf);
+    document.getElementById('uploadToDrive').addEventListener('click', uploadToDrive);
+    
+    console.log('Scanner initialized successfully');
+}
+
+
+
+// Camera functions
+function startCamera() {
+    console.log('=== startCamera called ===');
+    console.log('Function execution started');
+    
+    const cameraElement = document.getElementById('camera');
+    console.log('Camera element found:', !!cameraElement);
+    
+    // Check if Webcam is loaded
+    if (typeof Webcam === 'undefined') {
+        console.error('Webcam is undefined');
+        showNotification('Camera library not loaded. Please refresh the page and try again.', 'error');
+        return;
+    }
+    
+    console.log('Webcam is available:', typeof Webcam);
+    console.log('Webcam object:', Webcam);
+    
+    // Check if camera is supported
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        console.error('MediaDevices not supported');
+        showNotification('Camera not supported in this browser. Please use file upload instead.', 'error');
+        return;
+    }
+    
+    console.log('MediaDevices supported, checking permissions...');
+    console.log('navigator.mediaDevices:', navigator.mediaDevices);
+    console.log('getUserMedia available:', !!navigator.mediaDevices?.getUserMedia);
+    
+    // Show loading state
+    cameraElement.innerHTML = `
+        <div class="text-center text-white">
+            <div class="loading-spinner mx-auto mb-4"></div>
+            <p>Initializing camera...</p>
+        </div>
+    `;
+    
+    try {
+        console.log('Setting Webcam configuration...');
+        Webcam.set({
+            width: 640,
+            height: 480,
+            image_format: 'jpeg',
+            jpeg_quality: 90,
+            force_flash: false,
+            flash_swf_url: '',
+            enable_flash: false
+        });
+        
+        console.log('Attempting to attach camera...');
+        // Try to attach camera with error handling
+        Webcam.attach('#camera', function() {
+            console.log('Camera attached successfully');
+            webcam = Webcam;
+            document.getElementById('startCamera').disabled = true;
+            document.getElementById('captureImage').disabled = false;
+            document.getElementById('stopCamera').disabled = false;
+            showNotification('Camera started successfully!', 'success');
+        }, function(err) {
+            console.error('Camera attachment error:', err);
+            cameraElement.innerHTML = `
+                <div class="text-center text-white">
+                    <i class="fas fa-exclamation-triangle text-4xl mb-2"></i>
+                    <p class="mb-2">Camera access denied</p>
+                    <p class="text-sm">Please allow camera access or use file upload</p>
+                    <button onclick="showFileUploadHelp()" class="mt-2 px-3 py-1 bg-blue-600 text-white rounded text-sm">
+                        Use File Upload
+                    </button>
+                </div>
+            `;
+            showNotification('Camera access denied. Please use file upload instead.', 'error');
+        });
+    } catch (error) {
+        console.error('Webcam initialization error:', error);
+        showNotification('Failed to initialize camera. Please use file upload instead.', 'error');
+        showFileUploadHelp();
+    }
+}
+
+function captureImage() {
+    if (!webcam) {
+        showNotification('Camera not started. Please start the camera first.', 'error');
+        return;
+    }
+    
+    try {
+        webcam.snap(function(dataUri) {
+            const image = {
+                id: Date.now(),
+                dataUri: dataUri,
+                pageNumber: capturedImages.length + 1
+            };
+            
+            capturedImages.push(image);
+            updateCapturedImagesDisplay();
+            updateButtons();
+            showNotification('Image captured successfully!', 'success');
+        });
+    } catch (error) {
+        console.error('Capture error:', error);
+        showNotification('Failed to capture image. Please try again.', 'error');
+    }
+}
+
+function stopCamera() {
+    try {
+        if (webcam) {
+            Webcam.reset();
+            webcam = null;
+        }
+        
+        document.getElementById('startCamera').disabled = false;
+        document.getElementById('captureImage').disabled = true;
+        document.getElementById('stopCamera').disabled = true;
+        
+        // Reset camera display
+        const cameraElement = document.getElementById('camera');
+        cameraElement.innerHTML = `
+            <div class="text-center text-white p-8">
+                <i class="fas fa-camera text-4xl mb-4"></i>
+                <p class="text-lg font-semibold mb-2">Camera Ready</p>
+                <p class="text-sm">Click "Start Camera" to begin scanning</p>
+            </div>
+        `;
+        
+        showNotification('Camera stopped', 'info');
+    } catch (error) {
+        console.error('Error stopping camera:', error);
+    }
+}
+
+function showNotification(message, type = 'info') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg text-white max-w-sm ${
+        type === 'error' ? 'bg-red-600' :
+        type === 'success' ? 'bg-green-600' :
+        type === 'warning' ? 'bg-yellow-600' : 'bg-blue-600'
+    }`;
+    notification.innerHTML = `
+        <div class="flex items-center">
+            <i class="fas ${
+                type === 'error' ? 'fa-exclamation-triangle' :
+                type === 'success' ? 'fa-check-circle' :
+                type === 'warning' ? 'fa-exclamation-circle' : 'fa-info-circle'
+            } mr-2"></i>
+            <span>${message}</span>
+        </div>
+    `;
+    
+    // Add to page
+    document.body.appendChild(notification);
+    
+    // Remove after 5 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+        }
+    }, 5000);
+}
+
+function showFileUploadHelp() {
+    const cameraElement = document.getElementById('camera');
+    cameraElement.innerHTML = `
+        <div class="text-center text-white p-8">
+            <i class="fas fa-upload text-4xl mb-4 text-blue-400"></i>
+            <h3 class="text-lg font-semibold mb-2">Use File Upload</h3>
+            <p class="text-sm mb-4">Since camera access is not available, you can:</p>
+            <ul class="text-sm text-left max-w-md mx-auto space-y-1 mb-4">
+                <li>• Use the file upload below</li>
+                <li>• Select multiple images</li>
+                <li>• Edit and convert to PDF</li>
+            </ul>
+            <button onclick="document.getElementById('imageUpload').click()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+                <i class="fas fa-upload mr-2"></i>Choose Files
+            </button>
+        </div>
+    `;
+}
+
+function testCamera() {
+    console.log('=== Camera Test ===');
+    console.log('Webcam type:', typeof Webcam);
+    console.log('Webcam object:', Webcam);
+    console.log('navigator.mediaDevices:', navigator.mediaDevices);
+    console.log('getUserMedia available:', !!navigator.mediaDevices?.getUserMedia);
+    
+    if (typeof Webcam === 'undefined') {
+        alert('Webcam library not loaded!');
+        return;
+    }
+    
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert('Camera not supported in this browser!');
+        return;
+    }
+    
+    // Test getUserMedia directly
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+            console.log('Camera access granted:', stream);
+            alert('Camera access works! Stream active: ' + stream.active);
+            stream.getTracks().forEach(track => track.stop());
+        })
+        .catch(err => {
+            console.error('Camera access denied:', err);
+            alert('Camera access denied: ' + err.message);
+        });
+}
+
+function debugCamera() {
+    console.log('=== Debug Camera Info ===');
+    console.log('Page loaded:', document.readyState);
+    console.log('Libraries loaded:');
+    console.log('- Webcam:', typeof Webcam);
+    console.log('- Fabric:', typeof fabric);
+    console.log('- Cropper:', typeof Cropper);
+    console.log('Browser support:');
+    console.log('- MediaDevices:', !!navigator.mediaDevices);
+    console.log('- getUserMedia:', !!navigator.mediaDevices?.getUserMedia);
+    console.log('- HTTPS:', location.protocol === 'https:');
+    console.log('Button elements:');
+    console.log('- startCamera button:', document.getElementById('startCamera'));
+    console.log('- startCamera disabled:', document.getElementById('startCamera')?.disabled);
+    console.log('Event listeners:');
+    console.log('- startCamera onclick:', document.getElementById('startCamera')?.onclick);
+    
+    let info = 'Debug Information:\n\n';
+    info += 'Libraries:\n';
+    info += '- Webcam: ' + (typeof Webcam !== 'undefined' ? 'Loaded' : 'Not loaded') + '\n';
+    info += '- Fabric: ' + (typeof fabric !== 'undefined' ? 'Loaded' : 'Not loaded') + '\n';
+    info += '- Cropper: ' + (typeof Cropper !== 'undefined' ? 'Loaded' : 'Not loaded') + '\n\n';
+    info += 'Browser Support:\n';
+    info += '- MediaDevices: ' + (!!navigator.mediaDevices ? 'Yes' : 'No') + '\n';
+    info += '- getUserMedia: ' + (!!navigator.mediaDevices?.getUserMedia ? 'Yes' : 'No') + '\n';
+    info += '- HTTPS: ' + (location.protocol === 'https:' ? 'Yes' : 'No') + '\n\n';
+    info += 'Button Status:\n';
+    info += '- startCamera button exists: ' + (!!document.getElementById('startCamera') ? 'Yes' : 'No') + '\n';
+    info += '- startCamera disabled: ' + (document.getElementById('startCamera')?.disabled || 'N/A') + '\n';
+    
+    alert(info);
+}
+
+// File upload
+function handleFileUpload(event) {
+    const files = event.target.files;
+    
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            const image = {
+                id: Date.now() + i,
+                dataUri: e.target.result,
+                pageNumber: capturedImages.length + 1
+            };
+            
+            capturedImages.push(image);
+            updateCapturedImagesDisplay();
+            updateButtons();
+        };
+        
+        reader.readAsDataURL(file);
+    }
+}
+
+// Display functions
+function updateCapturedImagesDisplay() {
+    const container = document.getElementById('capturedImages');
+    
+    if (capturedImages.length === 0) {
+        container.innerHTML = `
+            <div class="text-center text-white/60 py-8">
+                <i class="fas fa-images text-3xl mb-2"></i>
+                <p>No images captured yet</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = capturedImages.map((image, index) => `
+        <div class="page-preview relative">
+            <div class="page-number">${image.pageNumber}</div>
+            <img src="${image.dataUri}" alt="Page ${image.pageNumber}" 
+                 class="captured-image w-full h-32 object-cover">
+            <button onclick="removeImage(${index})" 
+                    class="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `).join('');
+}
+
+function updateButtons() {
+    const hasImages = capturedImages.length > 0;
+    document.getElementById('editImages').disabled = !hasImages;
+    document.getElementById('convertToPdf').disabled = !hasImages;
+}
+
+function removeImage(index) {
+    capturedImages.splice(index, 1);
+    updateCapturedImagesDisplay();
+    updateButtons();
+}
+
+// Editor functions
+function openEditor() {
+    if (capturedImages.length === 0) return;
+    
+    document.getElementById('editorModal').classList.remove('hidden');
+    currentPageIndex = 0;
+    loadImageInEditor();
+}
+
+function closeEditor() {
+    document.getElementById('editorModal').classList.add('hidden');
+    if (cropper) {
+        cropper.destroy();
+        cropper = null;
+    }
+}
+
+function loadImageInEditor() {
+    const canvas = document.getElementById('editorCanvas');
+    const image = capturedImages[currentPageIndex];
+    
+    if (!image) return;
+    
+    // Initialize Fabric.js canvas
+    if (!editorCanvas) {
+        editorCanvas = new fabric.Canvas('editorCanvas', {
+            width: canvas.offsetWidth,
+            height: canvas.offsetHeight
+        });
+    }
+    
+    // Load image
+    fabric.Image.fromURL(image.dataUri, function(img) {
+        editorCanvas.clear();
+        
+        // Scale image to fit canvas
+        const scale = Math.min(
+            editorCanvas.width / img.width,
+            editorCanvas.height / img.height
+        );
+        
+        img.scale(scale);
+        img.center();
+        editorCanvas.add(img);
+        editorCanvas.renderAll();
+        
+        updatePageInfo();
+    });
+}
+
+function changePage(direction) {
+    const newIndex = currentPageIndex + direction;
+    
+    if (newIndex >= 0 && newIndex < capturedImages.length) {
+        currentPageIndex = newIndex;
+        loadImageInEditor();
+    }
+}
+
+function updatePageInfo() {
+    document.getElementById('pageInfo').textContent = 
+        `Page ${currentPageIndex + 1} of ${capturedImages.length}`;
+}
+
+// Crop functions
+function enableCrop() {
+    if (cropper) {
+        cropper.destroy();
+    }
+    
+    const canvas = editorCanvas.getElement();
+    cropper = new Cropper(canvas, {
+        aspectRatio: NaN,
+        viewMode: 1,
+        dragMode: 'move',
+        autoCropArea: 1,
+        restore: false,
+        guides: true,
+        center: true,
+        highlight: false,
+        cropBoxMovable: true,
+        cropBoxResizable: true,
+        toggleDragModeOnDblclick: false
+    });
+}
+
+function autoCrop() {
+    // Simple auto-crop implementation
+    const activeObject = editorCanvas.getActiveObject();
+    if (activeObject) {
+        activeObject.set({
+            left: 0,
+            top: 0,
+            width: editorCanvas.width,
+            height: editorCanvas.height
+        });
+        editorCanvas.renderAll();
+    }
+}
+
+function resetCrop() {
+    if (cropper) {
+        cropper.destroy();
+        cropper = null;
+    }
+    loadImageInEditor();
+}
+
+// Rotation
+function rotate(angle) {
+    const activeObject = editorCanvas.getActiveObject();
+    if (activeObject) {
+        activeObject.rotate(activeObject.angle + angle);
+        editorCanvas.renderAll();
+    }
+}
+
+// Filters
+function applyFilter(filterType) {
+    const activeObject = editorCanvas.getActiveObject();
+    if (!activeObject) return;
+    
+    // Remove existing filters
+    activeObject.filters = [];
+    
+    switch (filterType) {
+        case 'grayscale':
+            activeObject.filters.push(new fabric.Image.filters.Grayscale());
+            break;
+        case 'sepia':
+            activeObject.filters.push(new fabric.Image.filters.Sepia());
+            break;
+        case 'brightness':
+            activeObject.filters.push(new fabric.Image.filters.Brightness({brightness: 0.1}));
+            break;
+        case 'contrast':
+            activeObject.filters.push(new fabric.Image.filters.Contrast({contrast: 0.1}));
+            break;
+        case 'sharpen':
+            activeObject.filters.push(new fabric.Image.filters.Convolute({
+                matrix: [0, -1, 0, -1, 5, -1, 0, -1, 0]
+            }));
+            break;
+    }
+    
+    activeObject.applyFilters();
+    editorCanvas.renderAll();
+}
+
+// Quality controls
+function updateQuality() {
+    const brightness = document.getElementById('brightness').value;
+    const contrast = document.getElementById('contrast').value;
+    const saturation = document.getElementById('saturation').value;
+    
+    const activeObject = editorCanvas.getActiveObject();
+    if (!activeObject) return;
+    
+    // Apply quality adjustments
+    activeObject.filters = [];
+    
+    if (brightness != 100) {
+        activeObject.filters.push(new fabric.Image.filters.Brightness({
+            brightness: (brightness - 100) / 100
+        }));
+    }
+    
+    if (contrast != 100) {
+        activeObject.filters.push(new fabric.Image.filters.Contrast({
+            contrast: (contrast - 100) / 100
+        }));
+    }
+    
+    activeObject.applyFilters();
+    editorCanvas.renderAll();
+}
+
+// Save changes
+function saveChanges() {
+    if (!editorCanvas) return;
+    
+    // Get the edited image data
+    const dataUrl = editorCanvas.toDataURL({
+        format: 'jpeg',
+        quality: 0.9
+    });
+    
+    // Update the captured image
+    capturedImages[currentPageIndex].dataUri = dataUrl;
+    
+    // Show success message
+    showNotification('Changes saved successfully!', 'success');
+}
+
+// PDF conversion
+function convertToPdf() {
+    if (capturedImages.length === 0) return;
+    
+    showNotification('Converting images to PDF...', 'info');
+    
+    // Prepare edited images data
+    const editedImages = capturedImages.map(img => img.dataUri);
+    
+    // Send to server for PDF conversion
+    fetch('/process-edited-images', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            edited_images: editedImages
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showPdfPreview(data.pdf_data);
+        } else {
+            showNotification('Failed to convert to PDF: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        showNotification('Error converting to PDF: ' + error.message, 'error');
+    });
+}
+
+function showPdfPreview(pdfData) {
+    document.getElementById('pdfModal').classList.remove('hidden');
+    
+    // Create PDF preview
+    const pdfPreview = document.getElementById('pdfPreview');
+    pdfPreview.innerHTML = `
+        <embed src="data:application/pdf;base64,${pdfData}" 
+               type="application/pdf" width="100%" height="100%">
+    `;
+    
+    // Store PDF data for upload
+    window.generatedPdfData = pdfData;
+}
+
+function closePdfModal() {
+    document.getElementById('pdfModal').classList.add('hidden');
+}
+
+function downloadPdf() {
+    if (!window.generatedPdfData) return;
+    
+    const link = document.createElement('a');
+    link.href = 'data:application/pdf;base64,' + window.generatedPdfData;
+    link.download = 'scanned_document.pdf';
+    link.click();
+}
+
+function uploadToDrive() {
+    if (!window.generatedPdfData) return;
+    
+    // Create blob from base64 data
+    const byteCharacters = atob(window.generatedPdfData);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], {type: 'application/pdf'});
+    
+    // Create file object
+    const file = new File([blob], 'scanned_document.pdf', {type: 'application/pdf'});
+    
+    // Set form data
+    document.getElementById('finalPdfInput').files = new DataTransfer().files;
+    document.getElementById('finalTitle').value = document.getElementById('pdfTitle').value;
+    document.getElementById('finalDescription').value = document.getElementById('pdfDescription').value;
+    document.getElementById('finalSubject').value = document.getElementById('pdfSubject').value;
+    document.getElementById('finalBranch').value = document.getElementById('pdfBranch').value;
+    
+    // Submit form
+    document.getElementById('pdfUploadForm').submit();
+}
+
+
+</script>
+{% endblock %} 

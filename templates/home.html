@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Legezt Portal{% endblock %}
+
+{% block content %}
+<div class="min-h-screen">
+    <!-- Hero Section -->
+    <section class="bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+            <div class="text-center">
+                <h1 class="text-4xl md:text-6xl font-bold mb-6">
+                    Welcome to Legezt Portal
+                </h1>
+                <p class="text-xl md:text-2xl mb-8 text-blue-100">
+                    Your gateway to quality educational resources and study materials
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="{{ url_for('register') }}" class="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition duration-300">
+                        <i class="fas fa-user-plus mr-2"></i>Get Started
+                    </a>
+                    <a href="{{ url_for('login') }}" class="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition duration-300">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-20 bg-white dark:bg-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+                    Why Choose Legezt Portal?
+                </h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300">
+                    Everything you need for your academic success
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div class="bg-gray-50 dark:bg-gray-700 p-8 rounded-xl hover:shadow-lg transition duration-300">
+                    <div class="text-4xl text-blue-600 dark:text-blue-400 mb-4">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                        Comprehensive Study Materials
+                    </h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Access notes, assignments, previous year papers, and study guides for all subjects and branches.
+                    </p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="bg-gray-50 dark:bg-gray-700 p-8 rounded-xl hover:shadow-lg transition duration-300">
+                    <div class="text-4xl text-green-600 dark:text-green-400 mb-4">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                        Student Community
+                    </h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Connect with fellow students, share knowledge, and collaborate on projects.
+                    </p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="bg-gray-50 dark:bg-gray-700 p-8 rounded-xl hover:shadow-lg transition duration-300">
+                    <div class="text-4xl text-purple-600 dark:text-purple-400 mb-4">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                        Mobile Friendly
+                    </h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Access your study materials anywhere, anytime with our responsive design.
+                    </p>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="bg-gray-50 dark:bg-gray-700 p-8 rounded-xl hover:shadow-lg transition duration-300">
+                    <div class="text-4xl text-red-600 dark:text-red-400 mb-4">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                        Secure & Reliable
+                    </h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Your data is safe with us. Secure authentication and encrypted storage.
+                    </p>
+                </div>
+
+                <!-- Feature 5 -->
+                <div class="bg-gray-50 dark:bg-gray-700 p-8 rounded-xl hover:shadow-lg transition duration-300">
+                    <div class="text-4xl text-yellow-600 dark:text-yellow-400 mb-4">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                        Easy Search & Filter
+                    </h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Find exactly what you need with our advanced search and filtering system.
+                    </p>
+                </div>
+
+                <!-- Feature 6 -->
+                <div class="bg-gray-50 dark:bg-gray-700 p-8 rounded-xl hover:shadow-lg transition duration-300">
+                    <div class="text-4xl text-indigo-600 dark:text-indigo-400 mb-4">
+                        <i class="fas fa-cloud-download-alt"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                        Instant Downloads
+                    </h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Download study materials instantly with Google Drive integration.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Statistics Section -->
+    <section class="py-20 bg-blue-600 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">
+                    Growing Community
+                </h2>
+                <p class="text-xl text-blue-100">
+                    Join thousands of students already using Legezt Portal
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
+                <div>
+                    <div class="text-4xl font-bold mb-2" id="studentCount">1000+</div>
+                    <p class="text-blue-100">Active Students</p>
+                </div>
+                <div>
+                    <div class="text-4xl font-bold mb-2" id="materialCount">500+</div>
+                    <p class="text-blue-100">Study Materials</p>
+                </div>
+                <div>
+                    <div class="text-4xl font-bold mb-2" id="downloadCount">10K+</div>
+                    <p class="text-blue-100">Downloads</p>
+                </div>
+                <div>
+                    <div class="text-4xl font-bold mb-2" id="branchCount">6</div>
+                    <p class="text-blue-100">Branches</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20 bg-gray-50 dark:bg-gray-900">
+        <div class="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-6">
+                Ready to Get Started?
+            </h2>
+            <p class="text-xl text-gray-600 dark:text-gray-300 mb-8">
+                Join our community and start accessing quality educational resources today.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="{{ url_for('register') }}" class="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition duration-300">
+                    <i class="fas fa-user-plus mr-2"></i>Create Account
+                </a>
+                <a href="{{ url_for('about') }}" class="border-2 border-blue-600 text-blue-600 dark:text-blue-400 px-8 py-3 rounded-lg font-semibold hover:bg-blue-600 hover:text-white transition duration-300">
+                    <i class="fas fa-info-circle mr-2"></i>Learn More
+                </a>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Animate statistics on scroll
+    function animateCount(element, target, duration = 2000) {
+        let start = 0;
+        const increment = target / (duration / 16);
+        
+        const timer = setInterval(() => {
+            start += increment;
+            if (start >= target) {
+                element.textContent = target + (target >= 1000 ? '+' : '');
+                clearInterval(timer);
+            } else {
+                element.textContent = Math.floor(start) + (target >= 1000 ? '+' : '');
+            }
+        }, 16);
+    }
+
+    // Intersection Observer for animations
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const element = entry.target;
+                const target = parseInt(element.textContent.replace(/\D/g, ''));
+                animateCount(element, target);
+                observer.unobserve(element);
+            }
+        });
+    });
+
+    // Observe statistics elements
+    document.addEventListener('DOMContentLoaded', () => {
+        const stats = ['studentCount', 'materialCount', 'downloadCount', 'branchCount'];
+        stats.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                observer.observe(element);
+            }
+        });
+    });
+</script>
+{% endblock %} 

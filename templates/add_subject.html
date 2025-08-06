@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}Add Subject - {{ college.name }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <!-- Header -->
+    <div class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-6">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+                        <i class="fas fa-plus-circle mr-3 text-green-600"></i>Add New Subject
+                    </h1>
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        Add a new subject to {{ branch.name }} branch
+                    </p>
+                </div>
+                <div class="flex space-x-3">
+                    <a href="{{ url_for('college_branch', college_id=college.id, year_id=year.id, semester_id=semester.id, branch_id=branch.id) }}" 
+                       class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Back to Branch
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Breadcrumb -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <nav class="flex" aria-label="Breadcrumb">
+            <ol class="flex items-center space-x-4">
+                <li>
+                    <a href="{{ url_for('college') }}" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                        <i class="fas fa-home"></i>
+                    </a>
+                </li>
+                <li>
+                    <div class="flex items-center">
+                        <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                        <a href="{{ url_for('college_detail', college_id=college.id) }}" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                            {{ college.name }}
+                        </a>
+                    </div>
+                </li>
+                <li>
+                    <div class="flex items-center">
+                        <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                        <a href="{{ url_for('college_year', college_id=college.id, year_id=year.id) }}" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                            {{ year.name }}
+                        </a>
+                    </div>
+                </li>
+                <li>
+                    <div class="flex items-center">
+                        <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                        <a href="{{ url_for('college_semester', college_id=college.id, year_id=year.id, semester_id=semester.id) }}" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                            {{ semester.name }}
+                        </a>
+                    </div>
+                </li>
+                <li>
+                    <div class="flex items-center">
+                        <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                        <a href="{{ url_for('college_branch', college_id=college.id, year_id=year.id, semester_id=semester.id, branch_id=branch.id) }}" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                            {{ branch.name }}
+                        </a>
+                    </div>
+                </li>
+                <li>
+                    <div class="flex items-center">
+                        <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                        <span class="text-gray-900 dark:text-white font-medium">Add Subject</span>
+                    </div>
+                </li>
+            </ol>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+                    <i class="fas fa-book mr-2 text-green-600"></i>Subject Information
+                </h2>
+            </div>
+            
+            <form method="POST" class="p-6 space-y-6">
+                <div>
+                    <label for="subject_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Subject Name <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" id="subject_name" name="subject_name" required
+                           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                           placeholder="Enter subject name (e.g., Computer Science, Mathematics)">
+                </div>
+                
+                <div>
+                    <label for="subject_description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Description
+                    </label>
+                    <textarea id="subject_description" name="subject_description" rows="4"
+                              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                              placeholder="Enter subject description (optional)"></textarea>
+                </div>
+                
+                <div class="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200 dark:border-gray-700">
+                    <a href="{{ url_for('college_branch', college_id=college.id, year_id=year.id, semester_id=semester.id, branch_id=branch.id) }}"
+                       class="px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-200">
+                        Cancel
+                    </a>
+                    <button type="submit"
+                            class="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-200">
+                        <i class="fas fa-plus mr-2"></i>Add Subject
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Branch Information -->
+        <div class="mt-8 bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                    <i class="fas fa-info-circle mr-2 text-blue-600"></i>Branch Information
+                </h3>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">Branch Name</h4>
+                        <p class="mt-1 text-lg font-semibold text-gray-900 dark:text-white">{{ branch.name }}</p>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">Current Subjects</h4>
+                        <p class="mt-1 text-lg font-semibold text-gray-900 dark:text-white">{{ branch.subjects|length if branch.subjects else 0 }}</p>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">Semester</h4>
+                        <p class="mt-1 text-lg font-semibold text-gray-900 dark:text-white">{{ semester.name }}</p>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">Year</h4>
+                        <p class="mt-1 text-lg font-semibold text-gray-900 dark:text-white">{{ year.name }}</p>
+                    </div>
+                </div>
+                
+                {% if branch.subjects %}
+                <div class="mt-6">
+                    <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">Existing Subjects</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {% for subject_name in branch.subjects %}
+                        <div class="flex items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                            <i class="fas fa-book text-green-600 mr-3"></i>
+                            <span class="text-gray-900 dark:text-white">{{ subject_name }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
