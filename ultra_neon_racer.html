@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Neon Racer 3D (Ultra)</title>
+  <style>
+    html, body { height: 100%; margin: 0; }
+    body { background: radial-gradient(1000px 500px at 50% 110%, #0ff3, #000 60%); color: #fff; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+    #hud { position: fixed; inset: 0; pointer-events: none; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; gap: 8px; }
+    .chip { pointer-events: auto; background: #0ff2; border: 1px solid #0ff7; color: #0ff; padding: 8px 12px; border-radius: 999px; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); box-shadow: 0 0 20px #0ff3 inset; }
+    .btn { pointer-events: auto; padding: 10px 16px; border: 1px solid #0ff7; color: #0ff; background: #0ff1; border-radius: 12px; cursor: pointer; transition: 120ms; text-shadow: 0 0 6px #0ff9; }
+    .btn:hover { background: #0ff3; }
+    #score { margin-left: 8px; }
+    canvas { display: block; width: 100vw; height: 100vh; }
+    .mobile-ctrls { position: fixed; bottom: 16px; left: 0; right: 0; display: flex; justify-content: center; gap: 12px; pointer-events: none; }
+    .mobile-ctrls .btn { pointer-events: auto; }
+  </style>
+</head>
+<body>
+  <div id="hud">
+    <div class="topbar">
+      <div class="chip">🏁 Neon Racer 3D</div>
+      <div>
+        <button class="btn" onclick="location.href='gamelibrary.html'">Exit</button>
+        <span id="score" class="chip">Score: 0</span>
+      </div>
+    </div>
+    <div class="mobile-ctrls">
+      <button class="btn" id="leftBtn">⟵</button>
+      <button class="btn" id="jumpBtn">⤴ Jump</button>
+      <button class="btn" id="rightBtn">⟶</button>
+    </div>
+  </div>
+  <canvas id="c"></canvas>
+
+  <!-- Three.js and extras from CDN (MIT License) -->
+  <script src="https://unpkg.com/three@0.161.0/build/three.min.js"></script>
+  <script src="https://unpkg.com/three@0.161.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://unpkg.com/three@0.161.0/examples/js/loaders/GLTFLoader.js"></script>
+  <script src="https://unpkg.com/three@0.161.0/examples/js/postprocessing/EffectComposer.js"></script>
+  <script src="https://unpkg.com/three@0.161.0/examples/js/postprocessing/RenderPass.js"></script>
+  <script src="https://unpkg.com/three@0.161.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+  <script>
+    // Basic high-fidelity neon racer with HDRI, bloom, glTF car, mobile controls
+    const canvas = document.getElementById('c');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x020814, 0.06);
+
+    const camera = new THREE.PerspectiveCamera(70, innerWidth/innerHeight, 0.1, 1000);
+    camera.position.set(0, 3, 7);
+
+    // Lights
+    const hemi = new THREE.HemisphereLight(0x66ccff, 0x111122, 0.6);
+    scene.add(hemi);
+    const dir = new THREE.DirectionalLight(0xffffff, 1.2);
+    dir.position.set(5, 10, 7);
+    dir.castShadow = true;
+    scene.add(dir);
+
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+    // Ground neon track
+    const trackMat = new THREE.MeshStandardMaterial({ color: 0x021019, metalness: 0.2, roughness: 0.4 });
+    const track = new THREE.Mesh(new THREE.PlaneGeometry(50, 500), trackMat);
+    track.rotation.x = -Math.PI/2;
+    track.receiveShadow = true;
+    scene.add(track);
+
+    const laneGlowMat = new THREE.MeshBasicMaterial({ color: 0x00ffff });
+    const laneGeo = new THREE.BoxGeometry(0.1, 0.02, 500);
+    const leftLane = new THREE.Mesh(laneGeo, laneGlowMat); leftLane.position.x = -2; leftLane.position.y = 0.01; scene.add(leftLane);
+    const rightLane = new THREE.Mesh(laneGeo, laneGlowMat); rightLane.position.x = 2; rightLane.position.y = 0.01; scene.add(rightLane);
+
+    // Obstacles
+    const obstacleMat = new THREE.MeshStandardMaterial({ color: 0xff2a6d, metalness: 0.5, roughness: 0.2, emissive: 0x440022, emissiveIntensity: 0.6 });
+    const obstacles = [];
+    function spawnObstacle(z){
+      const b = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.2, 1.2), obstacleMat);
+      b.castShadow = true; b.receiveShadow = true;
+      b.position.set((Math.floor(Math.random()*3)-1)*2, 0.6, z);
+      scene.add(b); obstacles.push(b);
+    }
+    for (let i=0;i<30;i++) spawnObstacle(-i*12 - 20);
+
+    // Car placeholder: load a high-quality CC0 car glTF from Poly Pizza or Khronos Sample Models
+    let car;
+    const loader = new THREE.GLTFLoader();
+    loader.load(
+      'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Buggy/glTF/Buggy.gltf',
+      (gltf)=>{
+        car = gltf.scene;
+        car.traverse(n=>{ if(n.isMesh){ n.castShadow=true; n.receiveShadow=true; n.material.envMapIntensity=1.2; } });
+        car.scale.set(0.9,0.9,0.9);
+        car.position.set(0,0.35,2);
+        scene.add(car);
+      },
+      undefined,
+      (err)=>{
+        console.warn('Model load failed, using box');
+        car = new THREE.Mesh(new THREE.BoxGeometry(1,0.6,2), new THREE.MeshStandardMaterial({color:0x00ffff, metalness:0.7, roughness:0.2}));
+        car.position.set(0,0.35,2); car.castShadow = true; scene.add(car);
+      }
+    );
+
+    // Post-processing bloom
+    const composer = new THREE.EffectComposer(renderer);
+    const renderPass = new THREE.RenderPass(scene, camera);
+    const bloom = new THREE.UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.9, 0.4, 0.85);
+    composer.addPass(renderPass); composer.addPass(bloom);
+
+    // Game state
+    let speed = 0.3;
+    let lane = 0; // -1,0,1
+    let jumping = false; let vy = 0;
+    let score = 0;
+
+    function setLane(delta){ lane = Math.max(-1, Math.min(1, lane + delta)); }
+    function jump(){ if (!jumping) { jumping = true; vy = 0.22; } }
+
+    // Input
+    addEventListener('keydown', (e)=>{
+      if (e.code==='ArrowLeft' || e.code==='KeyA') setLane(-1);
+      if (e.code==='ArrowRight' || e.code==='KeyD') setLane(1);
+      if (e.code==='Space' || e.code==='ArrowUp') jump();
+    });
+    document.getElementById('leftBtn').addEventListener('touchstart', (e)=>{ e.preventDefault(); setLane(-1); });
+    document.getElementById('rightBtn').addEventListener('touchstart', (e)=>{ e.preventDefault(); setLane(1); });
+    document.getElementById('jumpBtn').addEventListener('touchstart', (e)=>{ e.preventDefault(); jump(); });
+
+    // Resize
+    addEventListener('resize', ()=>{
+      camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight);
+      composer.setSize(innerWidth, innerHeight);
+    });
+
+    // Animate
+    function animate(){
+      requestAnimationFrame(animate);
+      // Move world backward
+      scene.position.z += speed;
+      if (car){
+        const targetX = lane*2;
+        car.position.x += (targetX - car.position.x) * 0.2;
+        // Jump physics
+        if (jumping){
+          car.position.y += vy; vy -= 0.015; if (car.position.y <= 0.35){ car.position.y = 0.35; jumping=false; vy=0; }
+        }
+        camera.position.x += (car.position.x - camera.position.x) * 0.06;
+        camera.position.z = car.position.z + 7; camera.lookAt(car.position.x, car.position.y+0.5, car.position.z-4);
+      }
+      // Recycle obstacles and collision
+      for (const b of obstacles){
+        if (b.position.z - scene.position.z > 10) { b.position.z -= 360; b.position.x = (Math.floor(Math.random()*3)-1)*2; }
+        if (car){
+          const dz = (b.position.z - scene.position.z) - car.position.z;
+          if (Math.abs(dz) < 1.2 && Math.abs(b.position.x - car.position.x) < 1.1 && car.position.y < 0.8){
+            speed = Math.max(0.15, speed*0.96); // hit slows you
+          }
+        }
+      }
+      score += Math.floor(speed*10);
+      document.getElementById('score').textContent = 'Score: ' + score;
+      composer.render();
+    }
+    animate();
+  </script>
+</body>
+</html>
