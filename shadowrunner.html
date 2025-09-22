@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shadow Runner</title>
+    <style>
+        canvas { border: 1px solid #000; background: #000; }
+        body { text-align: center; background: #222; color: white; }
+        button { padding: 10px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Shadow Runner</h1>
+    <canvas id="gameCanvas" width="800" height="400"></canvas>
+    <div>
+        <button onclick="startGame()">Start</button>
+        <button onclick="pauseGame()">Pause</button>
+        <button onclick="restartGame()">Restart</button>
+        <button onclick="location.href='gamelibrary.html'">Exit</button>
+    </div>
+    <p>Score: <span id="score">0</span></p>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let player = { x: 50, y: 300, width: 20, height: 20, dy: 0 };
+        let obstacles = [];
+        let score = 0;
+        let gameRunning = false;
+        let paused = false;
+
+        function startGame() {
+            gameRunning = true;
+            gameLoop();
+        }
+
+        function pauseGame() {
+            paused = !paused;
+        }
+
+        function restartGame() {
+            player.y = 300;
+            obstacles = [];
+            score = 0;
+            document.getElementById('score').textContent = score;
+            gameRunning = true;
+            gameLoop();
+        }
+
+        function gameLoop() {
+            if (!gameRunning || paused) return;
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function update() {
+            player.y += player.dy;
+            if (player.y < 200) player.dy = 2; // gravity
+            if (player.y > 300) { player.y = 300; player.dy = 0; }
+
+            // Add obstacles
+            if (Math.random() < 0.01) obstacles.push({ x: 800, y: 300, width: 20, height: 20 });
+
+            obstacles.forEach((obs, i) => {
+                obs.x -= 5;
+                if (obs.x < -20) obstacles.splice(i, 1);
+                if (player.x < obs.x + obs.width && player.x + player.width > obs.x &&
+                    player.y < obs.y + obs.height && player.y + player.height > obs.y) {
+                    gameRunning = false;
+                    localStorage.setItem('ShadowRunner_HighScore', Math.max(score, localStorage.getItem('ShadowRunner_HighScore') || 0));
+                }
+            });
+
+            score++;
+            document.getElementById('score').textContent = score;
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'cyan';
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+            ctx.fillStyle = 'red';
+            obstacles.forEach(obs => ctx.fillRect(obs.x, obs.y, obs.width, obs.height));
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') player.dy = -10;
+        });
+    </script>
+</body>
+</html>

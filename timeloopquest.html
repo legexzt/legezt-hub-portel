@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Loop Quest</title>
+    <style>
+        body { text-align: center; background: #222; color: white; }
+        button { padding: 10px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Time Loop Quest</h1>
+    <p>Time: <span id="time">60</span></p>
+    <p>Clues: <span id="clues">0</span></p>
+    <button onclick="collectClue()">Collect Clue</button>
+    <div>
+        <button onclick="startGame()">Start</button>
+        <button onclick="pauseGame()">Pause</button>
+        <button onclick="restartGame()">Restart</button>
+        <button onclick="location.href='gamelibrary.html'">Exit</button>
+    </div>
+    <script>
+        let time = 60;
+        let clues = 0;
+        let gameRunning = false;
+        let paused = false;
+        let interval;
+
+        function startGame() {
+            gameRunning = true;
+            interval = setInterval(() => {
+                if (!paused) {
+                    time--;
+                    document.getElementById('time').textContent = time;
+                    if (time <= 0) {
+                        resetLoop();
+                    }
+                }
+            }, 1000);
+        }
+
+        function pauseGame() {
+            paused = !paused;
+        }
+
+        function restartGame() {
+            time = 60;
+            clues = 0;
+            document.getElementById('time').textContent = time;
+            document.getElementById('clues').textContent = clues;
+            clearInterval(interval);
+            gameRunning = false;
+        }
+
+        function collectClue() {
+            clues++;
+            document.getElementById('clues').textContent = clues;
+            if (clues >= 5) {
+                alert('You win!');
+                localStorage.setItem('TimeLoopQuest_HighScore', Math.max(clues, localStorage.getItem('TimeLoopQuest_HighScore') || 0));
+            }
+        }
+
+        function resetLoop() {
+            time = 60;
+            document.getElementById('time').textContent = time;
+        }
+    </script>
+</body>
+</html>

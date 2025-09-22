@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gravity Switch Arena</title>
+    <style>
+        canvas { border: 1px solid #000; background: #000; }
+        body { text-align: center; background: #222; color: white; }
+        button { padding: 10px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Gravity Switch Arena</h1>
+    <canvas id="gameCanvas" width="800" height="400"></canvas>
+    <div>
+        <button onclick="startGame()">Start</button>
+        <button onclick="pauseGame()">Pause</button>
+        <button onclick="restartGame()">Restart</button>
+        <button onclick="location.href='gamelibrary.html'">Exit</button>
+    </div>
+    <p>Score: <span id="score">0</span></p>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let player = { x: 400, y: 200, width: 20, height: 20, dy: 0 };
+        let gravity = 0.5;
+        let score = 0;
+        let gameRunning = false;
+        let paused = false;
+
+        function startGame() {
+            gameRunning = true;
+            gameLoop();
+        }
+
+        function pauseGame() {
+            paused = !paused;
+        }
+
+        function restartGame() {
+            player.y = 200;
+            score = 0;
+            document.getElementById('score').textContent = score;
+            gameRunning = true;
+            gameLoop();
+        }
+
+        function gameLoop() {
+            if (!gameRunning || paused) return;
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function update() {
+            player.dy += gravity;
+            player.y += player.dy;
+            if (player.y > 380 || player.y < 0) {
+                gameRunning = false;
+                localStorage.setItem('GravitySwitchArena_HighScore', Math.max(score, localStorage.getItem('GravitySwitchArena_HighScore') || 0));
+            }
+            score++;
+            document.getElementById('score').textContent = score;
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'blue';
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') gravity = -gravity;
+        });
+    </script>
+</body>
+</html>

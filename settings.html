@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background: #222; color: white; }
+        input { margin: 10px; }
+        button { padding: 10px 20px; margin: 10px; background: #444; color: white; border: none; cursor: pointer; }
+        button:hover { background: #666; }
+    </style>
+</head>
+<body>
+    <h1>Settings</h1>
+    <label>Volume: <input type="range" id="volume" min="0" max="1" step="0.1" value="1"></label>
+    <label>Quality: <select id="quality"><option>Low</option><option>Medium</option><option>High</option></select></label>
+    <button onclick="saveSettings()">Save</button>
+    <button onclick="location.href='index.html'">Back</button>
+    <script>
+        function saveSettings() {
+            const volume = document.getElementById('volume').value;
+            const quality = document.getElementById('quality').value;
+            localStorage.setItem('volume', volume);
+            localStorage.setItem('quality', quality);
+            alert('Settings saved');
+        }
+    </script>
+</body>
+</html>

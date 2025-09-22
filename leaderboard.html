@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaderboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background: #222; color: white; }
+        button { padding: 10px 20px; margin: 10px; background: #444; color: white; border: none; cursor: pointer; }
+        button:hover { background: #666; }
+    </style>
+</head>
+<body>
+    <h1>Leaderboard</h1>
+    <div id="leaderboard"></div>
+    <button onclick="location.href='index.html'">Back</button>
+    <script>
+        const scores = {
+            ShadowRunner: localStorage.getItem('ShadowRunner_HighScore') || 0,
+            GravitySwitchArena: localStorage.getItem('GravitySwitchArena_HighScore') || 0,
+            TimeLoopQuest: localStorage.getItem('TimeLoopQuest_HighScore') || 0,
+            ElementalClash: localStorage.getItem('ElementalClash_HighScore') || 0,
+            NanoBotsWar: localStorage.getItem('NanoBotsWar_HighScore') || 0
+        };
+        document.getElementById('leaderboard').innerHTML = Object.entries(scores).map(([game, score]) => `<p>${game}: ${score}</p>`).join('');
+    </script>
+</body>
+</html>

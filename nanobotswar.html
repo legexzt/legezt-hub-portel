@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nano Bots War</title>
+    <style>
+        canvas { border: 1px solid #000; background: #000; }
+        body { text-align: center; background: #222; color: white; }
+        button { padding: 10px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Nano Bots War</h1>
+    <canvas id="gameCanvas" width="800" height="400"></canvas>
+    <div>
+        <button onclick="startGame()">Start</button>
+        <button onclick="pauseGame()">Pause</button>
+        <button onclick="restartGame()">Restart</button>
+        <button onclick="location.href='gamelibrary.html'">Exit</button>
+    </div>
+    <p>Score: <span id="score">0</span></p>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let player = { x: 400, y: 200, width: 20, height: 20 };
+        let bullets = [];
+        let enemies = [];
+        let score = 0;
+        let gameRunning = false;
+        let paused = false;
+
+        function startGame() {
+            gameRunning = true;
+            gameLoop();
+        }
+
+        function pauseGame() {
+            paused = !paused;
+        }
+
+        function restartGame() {
+            bullets = [];
+            enemies = [];
+            score = 0;
+            document.getElementById('score').textContent = score;
+            gameRunning = true;
+            gameLoop();
+        }
+
+        function gameLoop() {
+            if (!gameRunning || paused) return;
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function update() {
+            // Move bullets
+            bullets.forEach((b, i) => {
+                b.x += b.dx;
+                if (b.x > 800) bullets.splice(i, 1);
+            });
+
+            // Add enemies
+            if (Math.random() < 0.01) enemies.push({ x: 800, y: Math.random() * 400, width: 20, height: 20 });
+
+            enemies.forEach((e, i) => {
+                e.x -= 2;
+                if (e.x < -20) enemies.splice(i, 1);
+                bullets.forEach((b, j) => {
+                    if (b.x < e.x + e.width && b.x + 10 > e.x && b.y < e.y + e.height && b.y + 10 > e.y) {
+                        enemies.splice(i, 1);
+                        bullets.splice(j, 1);
+                        score += 10;
+                    }
+                });
+            });
+
+            document.getElementById('score').textContent = score;
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'green';
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+            ctx.fillStyle = 'yellow';
+            bullets.forEach(b => ctx.fillRect(b.x, b.y, 10, 10));
+            ctx.fillStyle = 'red';
+            enemies.forEach(e => ctx.fillRect(e.x, e.y, e.width, e.height));
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'ArrowUp') player.y -= 5;
+            if (e.code === 'ArrowDown') player.y += 5;
+            if (e.code === 'ArrowLeft') player.x -= 5;
+            if (e.code === 'ArrowRight') player.x += 5;
+            if (e.code === 'Space') bullets.push({ x: player.x + 20, y: player.y + 10, dx: 5 });
+        });
+    </script>
+</body>
+</html>

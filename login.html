@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background: #222; color: white; }
+        input { display: block; margin: 10px auto; padding: 10px; }
+        button { padding: 10px 20px; margin: 10px; background: #444; color: white; border: none; cursor: pointer; }
+        button:hover { background: #666; }
+    </style>
+</head>
+<body>
+    <h1>Login</h1>
+    <button onclick="guestLogin()">Guest Login</button>
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="userLogin()">User Login</button>
+    <button onclick="location.href='index.html'">Back</button>
+    <script>
+        function guestLogin() {
+            localStorage.setItem('userType', 'Guest');
+            location.href = 'index.html';
+        }
+        function userLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            if (username && password) {
+                localStorage.setItem('userType', 'User');
+                localStorage.setItem('username', username);
+                location.href = 'index.html';
+            } else {
+                alert('Invalid credentials');
+            }
+        }
+    </script>
+</body>
+</html>
