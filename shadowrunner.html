@@ -5,15 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shadow Runner</title>
     <style>
-        canvas { border: 1px solid #000; background: #000; }
-        body { text-align: center; background: #222; color: white; }
-        button { padding: 10px; margin: 5px; }
+        body { font-family: 'Arial', sans-serif; text-align: center; background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%); color: white; margin: 0; padding: 10px; }
+        canvas { border: 2px solid cyan; border-radius: 10px; background: #000; max-width: 100%; height: auto; }
+        button { padding: 10px 20px; margin: 5px; background: rgba(0,255,255,0.2); color: cyan; border: 1px solid cyan; border-radius: 5px; cursor: pointer; }
+        button:hover { background: rgba(0,255,255,0.4); }
+        .controls { display: flex; justify-content: center; flex-wrap: wrap; }
+        @media (max-width: 600px) { canvas { width: 100%; } .controls button { flex: 1 1 45%; } }
     </style>
 </head>
 <body>
-    <h1>Shadow Runner</h1>
+    <h1>🏃 Shadow Runner</h1>
     <canvas id="gameCanvas" width="800" height="400"></canvas>
-    <div>
+    <div class="controls">
         <button onclick="startGame()">Start</button>
         <button onclick="pauseGame()">Pause</button>
         <button onclick="restartGame()">Restart</button>
@@ -23,11 +26,20 @@
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        let player = { x: 50, y: 300, width: 20, height: 20, dy: 0 };
+        let player = { x: 50, y: 300, width: 20, height: 20, dy: 0, color: 'cyan' };
         let obstacles = [];
         let score = 0;
         let gameRunning = false;
         let paused = false;
+
+        // Resize canvas for mobile
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
 
         function startGame() {
             gameRunning = true;
@@ -56,11 +68,11 @@
 
         function update() {
             player.y += player.dy;
-            if (player.y < 200) player.dy = 2; // gravity
-            if (player.y > 300) { player.y = 300; player.dy = 0; }
+            player.dy += 0.5; // gravity
+            if (player.y > canvas.height - player.height) { player.y = canvas.height - player.height; player.dy = 0; }
 
             // Add obstacles
-            if (Math.random() < 0.01) obstacles.push({ x: 800, y: 300, width: 20, height: 20 });
+            if (Math.random() < 0.01) obstacles.push({ x: canvas.width, y: canvas.height - 20, width: 20, height: 20, color: 'red' });
 
             obstacles.forEach((obs, i) => {
                 obs.x -= 5;
@@ -78,14 +90,28 @@
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = 'cyan';
+            // Background
+            ctx.fillStyle = 'rgba(0,0,50,0.5)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            // Player
+            ctx.fillStyle = player.color;
             ctx.fillRect(player.x, player.y, player.width, player.height);
-            ctx.fillStyle = 'red';
-            obstacles.forEach(obs => ctx.fillRect(obs.x, obs.y, obs.width, obs.height));
+            // Obstacles
+            obstacles.forEach(obs => {
+                ctx.fillStyle = obs.color;
+                ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+            });
         }
 
+        // Keyboard and touch
         document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space') player.dy = -10;
+            if (e.code === 'Space' || e.code === 'ArrowUp') {
+                if (player.y === canvas.height - player.height) player.dy = -15;
+            }
+        });
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (player.y === canvas.height - player.height) player.dy = -15;
         });
     </script>
 </body>

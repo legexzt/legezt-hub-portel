@@ -5,15 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nano Bots War</title>
     <style>
-        canvas { border: 1px solid #000; background: #000; }
-        body { text-align: center; background: #222; color: white; }
-        button { padding: 10px; margin: 5px; }
+        body { font-family: 'Arial', sans-serif; text-align: center; background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%); color: white; margin: 0; padding: 10px; }
+        canvas { border: 2px solid green; border-radius: 10px; background: #000; max-width: 100%; height: auto; }
+        button { padding: 10px 20px; margin: 5px; background: rgba(0,255,0,0.2); color: green; border: 1px solid green; border-radius: 5px; cursor: pointer; }
+        button:hover { background: rgba(0,255,0,0.4); }
+        .controls { display: flex; justify-content: center; flex-wrap: wrap; }
+        @media (max-width: 600px) { canvas { width: 100%; } .controls button { flex: 1 1 45%; } }
     </style>
 </head>
 <body>
-    <h1>Nano Bots War</h1>
+    <h1>🤖 Nano Bots War</h1>
     <canvas id="gameCanvas" width="800" height="400"></canvas>
-    <div>
+    <div class="controls">
         <button onclick="startGame()">Start</button>
         <button onclick="pauseGame()">Pause</button>
         <button onclick="restartGame()">Restart</button>
@@ -23,12 +26,20 @@
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        let player = { x: 400, y: 200, width: 20, height: 20 };
+        let player = { x: 400, y: 200, width: 20, height: 20, color: 'green' };
         let bullets = [];
         let enemies = [];
         let score = 0;
         let gameRunning = false;
         let paused = false;
+
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
 
         function startGame() {
             gameRunning = true;
@@ -59,11 +70,11 @@
             // Move bullets
             bullets.forEach((b, i) => {
                 b.x += b.dx;
-                if (b.x > 800) bullets.splice(i, 1);
+                if (b.x > canvas.width) bullets.splice(i, 1);
             });
 
             // Add enemies
-            if (Math.random() < 0.01) enemies.push({ x: 800, y: Math.random() * 400, width: 20, height: 20 });
+            if (Math.random() < 0.01) enemies.push({ x: canvas.width, y: Math.random() * canvas.height, width: 20, height: 20, color: 'red' });
 
             enemies.forEach((e, i) => {
                 e.x -= 2;
@@ -82,12 +93,16 @@
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = 'green';
+            ctx.fillStyle = 'rgba(0,50,0,0.5)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = player.color;
             ctx.fillRect(player.x, player.y, player.width, player.height);
             ctx.fillStyle = 'yellow';
             bullets.forEach(b => ctx.fillRect(b.x, b.y, 10, 10));
-            ctx.fillStyle = 'red';
-            enemies.forEach(e => ctx.fillRect(e.x, e.y, e.width, e.height));
+            enemies.forEach(e => {
+                ctx.fillStyle = e.color;
+                ctx.fillRect(e.x, e.y, e.width, e.height);
+            });
         }
 
         document.addEventListener('keydown', (e) => {
@@ -96,6 +111,17 @@
             if (e.code === 'ArrowLeft') player.x -= 5;
             if (e.code === 'ArrowRight') player.x += 5;
             if (e.code === 'Space') bullets.push({ x: player.x + 20, y: player.y + 10, dx: 5 });
+        });
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            bullets.push({ x: player.x + 20, y: player.y + 10, dx: 5 });
+        });
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const rect = canvas.getBoundingClientRect();
+            player.x = touch.clientX - rect.left - player.width / 2;
+            player.y = touch.clientY - rect.top - player.height / 2;
         });
     </script>
 </body>

@@ -5,21 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Elemental Clash</title>
     <style>
-        canvas { border: 1px solid #000; background: #000; }
-        body { text-align: center; background: #222; color: white; }
-        button { padding: 10px; margin: 5px; }
+        body { font-family: 'Arial', sans-serif; text-align: center; background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%); color: white; margin: 0; padding: 10px; }
+        canvas { border: 2px solid orange; border-radius: 10px; background: #000; max-width: 100%; height: auto; }
+        button { padding: 10px 20px; margin: 5px; background: rgba(255,165,0,0.2); color: orange; border: 1px solid orange; border-radius: 5px; cursor: pointer; }
+        button:hover { background: rgba(255,165,0,0.4); }
+        .element-buttons { display: flex; justify-content: center; flex-wrap: wrap; }
+        .controls { display: flex; justify-content: center; flex-wrap: wrap; }
+        @media (max-width: 600px) { canvas { width: 100%; } .element-buttons button, .controls button { flex: 1 1 45%; } }
     </style>
 </head>
 <body>
-    <h1>Elemental Clash</h1>
+    <h1>🔥 Elemental Clash</h1>
     <canvas id="gameCanvas" width="800" height="400"></canvas>
-    <div>
-        <button onclick="switchElement('fire')">Fire</button>
-        <button onclick="switchElement('water')">Water</button>
-        <button onclick="switchElement('earth')">Earth</button>
-        <button onclick="switchElement('air')">Air</button>
+    <div class="element-buttons">
+        <button onclick="switchElement('fire')">🔥 Fire</button>
+        <button onclick="switchElement('water')">💧 Water</button>
+        <button onclick="switchElement('earth')">🌱 Earth</button>
+        <button onclick="switchElement('air')">💨 Air</button>
     </div>
-    <div>
+    <div class="controls">
         <button onclick="startGame()">Start</button>
         <button onclick="pauseGame()">Pause</button>
         <button onclick="restartGame()">Restart</button>
@@ -29,15 +33,24 @@
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        let player = { x: 100, y: 200, width: 20, height: 20 };
+        let player = { x: 100, y: 200, width: 20, height: 20, color: 'red' };
         let enemy = { x: 600, y: 200, width: 20, height: 20 };
         let element = 'fire';
         let score = 0;
         let gameRunning = false;
         let paused = false;
 
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
         function switchElement(newElement) {
             element = newElement;
+            player.color = element === 'fire' ? 'red' : element === 'water' ? 'blue' : element === 'earth' ? 'green' : 'white';
         }
 
         function startGame() {
@@ -75,7 +88,9 @@
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = element === 'fire' ? 'red' : element === 'water' ? 'blue' : element === 'earth' ? 'green' : 'white';
+            ctx.fillStyle = 'rgba(50,0,0,0.5)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = player.color;
             ctx.fillRect(player.x, player.y, player.width, player.height);
             ctx.fillStyle = 'red';
             ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
@@ -84,6 +99,12 @@
         document.addEventListener('keydown', (e) => {
             if (e.code === 'ArrowRight') player.x += 5;
             if (e.code === 'ArrowLeft') player.x -= 5;
+        });
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const rect = canvas.getBoundingClientRect();
+            player.x = touch.clientX - rect.left - player.width / 2;
         });
     </script>
 </body>
